@@ -15,7 +15,7 @@ Currency: **DH** (Moroccan Dirham). Interface language: **French**.
 - **Frontend:** React + Vite
 - **Styling:** Tailwind CSS v4 (uses `@theme` in `src/index.css`, NOT `tailwind.config.js`)
 - **Backend:** Firebase (Firestore, Auth, Storage)
-- **Hosting:** GitHub Pages (base path `/buro/`)
+- **Hosting:** GitHub Pages with custom domain `younasser.ma` (base path `/`)
 - **Routing:** HashRouter (for GitHub Pages compatibility)
 
 ---
@@ -281,7 +281,7 @@ Store config: name, currency, delivery settings, WhatsApp number, school year
 - Tailwind v4: colors defined in `@theme` block in `src/index.css`
 - No `tailwind.config.js` — delete if present
 - Vite plugin: `@tailwindcss/vite`
-- GitHub Pages: `base: '/buro/'` in vite.config.js
+- GitHub Pages: `base: '/'` in vite.config.js (custom domain `younasser.ma`, no repo-name subpath needed)
 - HashRouter for SPA routing on GitHub Pages
 - Firebase config in `.env` with `VITE_` prefix
 - All Firebase imports from `src/firebase.js`
