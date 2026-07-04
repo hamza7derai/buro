@@ -1,42 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
 @theme {
-  --color-surface-0: #0f1117;
-  --color-surface-1: #181c27;
-  --color-surface-2: #1e2333;
-  --color-surface-3: #252b3b;
-  --color-bord: #2a3148;
-  --color-brand-500: #4f8ef7;
-  --color-brand-600: #3b7cf5;
-  --color-success: #38d9a9;
-  --color-warn: #f7c948;
-  --color-danger: #f55f5f;
-  --color-txt-1: #e8ecf4;
-  --color-txt-2: #8b92a8;
-  --color-txt-3: #5a6175;
-  --font-sans: 'DM Sans', sans-serif;
+  --color-surface-0: #fafbfd;
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f8f9fc;
+  --color-surface-3: #eef0f5;
+  --color-bord: #e5e7eb;
+  --color-brand-500: #F5A623;
+  --color-brand-600: #d6890f;
+  --color-success: #22c55e;
+  --color-warn: #F5A623;
+  --color-danger: #ef4444;
+  --color-txt-1: #1a1a2e;
+  --color-txt-2: #6b7280;
+  --color-txt-3: #9ca3af;
+  --color-navy: #1e3a5f;
+  --color-blue: #2563eb;
+  --color-blue-light: #eff6ff;
+  --font-sans: 'Nunito', sans-serif;
   --font-mono: 'DM Mono', monospace;
 }
 
 * { box-sizing: border-box; }
 
 body {
-  font-family: 'DM Sans', sans-serif;
-  background: #0f1117;
-  color: #e8ecf4;
+  font-family: 'Nunito', sans-serif;
+  background: #fafbfd;
+  color: #1a1a2e;
   margin: 0;
 }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a3148; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #5a6175; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
 @media print {
   body * { visibility: hidden; }
   .print-area, .print-area * { visibility: visible; }
-  .print-area { position: fixed; top: 0; left: 0; width: 100%; background: white; color: black; padding: 20px; }
+  .print-area { position: fixed; top: 0; left: 0; width: 100%; background: white; color: black; padding: 0; }
+
+  .ticket-receipt {
+    width: 80mm;
+    max-width: 80mm;
+    margin: 0 auto;
+    padding: 2mm 3mm;
+    font-family: 'DM Mono', 'Courier New', monospace;
+    font-size: 11px;
+    line-height: 1.3;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .ticket-receipt * { color: #000 !important; background: transparent !important; line-height: 1.3 !important; }
+}
+
+/* Cart row feedback when a scanned/clicked item lands in the POS cart */
+@keyframes cart-row-flash {
+  from { background-color: #dbeafe; }
+  to { background-color: transparent; }
+}
+.cart-row-flash {
+  animation: cart-row-flash 1s ease-out forwards;
 }
 
 @utility input-field {
@@ -54,7 +80,7 @@ body {
 
 @utility btn-primary {
   background-color: var(--color-brand-500);
-  color: white;
+  color: #1a1a2e;
   padding: 0.625rem 1rem;
   border-radius: 0.5rem;
   font-weight: 600;
@@ -81,7 +107,7 @@ body {
 
 @utility btn-success {
   background-color: var(--color-success);
-  color: var(--color-surface-0);
+  color: #ffffff;
   padding: 0.625rem 1rem;
   border-radius: 0.5rem;
   font-weight: 600;

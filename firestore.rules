@@ -1,0 +1,130 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── helpers ────────────────────────────────────────────────────────────
+    function authed() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return authed() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isStaff() {
+      // admin OR regular authenticated POS user
+      return authed();
+    }
+
+    // ─── Public catalogue ────────────────────────────────────────────────────
+    // products, categories, packs, manuels, schools: anyone can read
+
+    match /products/{docId} {
+      allow read: if true;
+      allow write: if isStaff();        // cashiers can add/edit products per CLAUDE.md
+    }
+    match /products/{docId}/variants/{variantId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /categories/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /packs/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /packs/{docId}/packItems/{itemId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /manuels/{docId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /schools/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /schools/{docId}/schoolLists/{listId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ─── Orders (online storefront) ──────────────────────────────────────────
+    // Anyone (including unauthenticated storefront customers) can place an order.
+    // Only admin can read, update, or delete orders.
+
+    match /orders/{docId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+    match /orders/{docId}/orderItems/{itemId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ─── POS Sales & Drafts ──────────────────────────────────────────────────
+    // Admin only for sales records.
+    // Drafts (suspended/saved carts) accessible to any authenticated POS user.
+
+    match /sales/{docId} {
+      allow read, write: if isAdmin();
+    }
+    match /sales/{docId}/saleItems/{itemId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /drafts/{docId} {
+      allow read, write: if isStaff();
+    }
+
+    // ─── Clients ─────────────────────────────────────────────────────────────
+    // Admin only (read + write).
+
+    match /clients/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ─── Users ───────────────────────────────────────────────────────────────
+    // Each authenticated user can read their own document (for role lookup).
+    // Only admin can write user documents.
+
+    match /users/{userId} {
+      allow read: if authed() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // ─── Suppliers ───────────────────────────────────────────────────────────
+    match /suppliers/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ─── Purchase orders ─────────────────────────────────────────────────────
+    match /purchaseOrders/{docId} {
+      allow read, write: if isAdmin();
+    }
+    match /purchaseOrders/{docId}/items/{itemId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ─── Settings ────────────────────────────────────────────────────────────
+    match /settings/{docId} {
+      allow read: if isStaff();
+      allow write: if isAdmin();
+    }
+
+    // Brands are shown in the public storefront filter, and cashiers can add
+    // new ones while creating a product (same permission as product creation).
+    match /settings/brands {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+  }
+}

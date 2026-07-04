@@ -18,14 +18,14 @@ export function useClients() {
     return unsubscribe;
   }, []);
 
-  const addClient = async ({ name, phone, ice, type, address, notes }) => {
+  const addClient = async ({ name, phone, ice, type, address, notes, email }) => {
     const ref = doc(collection(db, 'clients'));
     await setDoc(ref, {
       name: name || '',
       phone: phone || '',
       ice: ice || '',
       type: type || 'retail',
-      email: '',
+      email: email || '',
       firstName: '',
       lastName: '',
       address: address || '',
