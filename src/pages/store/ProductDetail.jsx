@@ -13,10 +13,10 @@ import { genreLabel } from '../../lib/bookMeta';
 import ProductCard from '../../components/store/ProductCard';
 
 export default function ProductDetail() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
-  const { product, variants, loading, notFound } = useProduct(id);
+  const { product, variants, loading, notFound } = useProduct(slug);
   const { products: allProducts, fetchVariants } = useProducts();
   const { categories } = useCategories();
   const { addToCart, cartCount } = useCart();
@@ -37,7 +37,7 @@ export default function ProductDetail() {
     setQuantity(1);
     setActiveImage(0);
     setSelectedLot(null);
-  }, [id]);
+  }, [slug]);
 
   useEffect(() => {
     setActiveImage(0);

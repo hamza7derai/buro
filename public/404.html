@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+    const path = window.location.pathname;
+    const search = window.location.search;
+    const hash = window.location.hash;
+    window.location.replace(
+      window.location.origin + '/?redirect=' + encodeURIComponent(path + search + hash)
+    );
+  </script>
+</head>
+<body></body>
+</html>

@@ -89,7 +89,7 @@ export default function StoreLayout() {
     if (!search.trim()) return;
     setShowDropdown(false);
     if (searchResults.length > 0) {
-      navigate(`/produit/${searchResults[0].id}`);
+      navigate(`/produit/${searchResults[0].slug || searchResults[0].id}`);
       setSearch('');
     } else {
       navigate(`/categories?q=${encodeURIComponent(search.trim())}`);
@@ -161,7 +161,7 @@ export default function StoreLayout() {
                     return (
                       <Link
                         key={p.id}
-                        to={`/produit/${p.id}`}
+                        to={`/produit/${p.slug || p.id}`}
                         className="flex items-center gap-3 px-4 py-2.5 hover:bg-surface-2 transition-colors border-b border-bord last:border-b-0"
                         onClick={() => { setShowDropdown(false); setSearch(''); }}
                       >

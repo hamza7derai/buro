@@ -78,7 +78,7 @@ function ManuelCard({ product, layout, onAdd, onNotify }) {
 
   if (layout === 'row') {
     return (
-      <Link to={`/produit/${product.id}`} className="flex gap-3 bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow">
+      <Link to={`/produit/${product.slug || product.id}`} className="flex gap-3 bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow">
         {cover}
         <div className="flex-1 min-w-0 flex flex-col gap-1">{info}</div>
         <div className="flex flex-col items-end justify-between shrink-0 text-right">
@@ -90,7 +90,7 @@ function ManuelCard({ product, layout, onAdd, onNotify }) {
   }
 
   return (
-    <Link to={`/produit/${product.id}`} className="bg-white rounded-xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow">
+    <Link to={`/produit/${product.slug || product.id}`} className="bg-white rounded-xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow">
       {cover}
       <div className="p-3 flex flex-col gap-1 flex-1">
         {info}

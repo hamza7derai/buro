@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Gift, Lock, Check } from 'lucide-react';
 import { db } from '../../firebase';
-import { doc, onSnapshot, collection, query, orderBy } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, collection, query, orderBy, where, limit } from 'firebase/firestore';
 import { useProducts } from '../../hooks/useProducts';
 import { useCategories } from '../../hooks/useCategories';
 import { useCart } from '../../context/CartContext';
@@ -10,44 +10,78 @@ import { useToast } from '../../components/Toast';
 import { formatPrice } from '../../lib/pricing';
 import ProductCard from '../../components/store/ProductCard';
 
-function usePackDetail(id) {
+function usePackDetail(slugOrId) {
   const [pack, setPack] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!slugOrId) return;
     setLoading(true);
     setNotFound(false);
+    setPack(null);
+    setItems([]);
 
-    const unsubPack = onSnapshot(doc(db, 'packs', id), snap => {
-      if (!snap.exists()) {
-        setPack(null);
-        setNotFound(true);
+    let cancelled = false;
+    let unsubItems = null;
+
+    function subscribeToItems(packId) {
+      if (unsubItems) unsubItems();
+      const itemsQuery = query(collection(db, 'packs', packId, 'packItems'), orderBy('order'));
+      unsubItems = onSnapshot(itemsQuery, snap => {
+        setItems(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      });
+    }
+
+    const slugQuery = query(collection(db, 'packs'), where('slug', '==', slugOrId), limit(1));
+    const unsubPack = onSnapshot(slugQuery, async snap => {
+      if (cancelled) return;
+
+      if (!snap.empty) {
+        const found = snap.docs[0];
+        setPack({ id: found.id, ...found.data() });
         setLoading(false);
+        subscribeToItems(found.id);
         return;
       }
-      setPack({ id: snap.id, ...snap.data() });
-      setLoading(false);
+
+      // Fallback for legacy links built from the document id rather than the slug
+      try {
+        const idSnap = await getDoc(doc(db, 'packs', slugOrId));
+        if (cancelled) return;
+        if (idSnap.exists()) {
+          setPack({ id: idSnap.id, ...idSnap.data() });
+          setLoading(false);
+          subscribeToItems(idSnap.id);
+        } else {
+          setPack(null);
+          setNotFound(true);
+          setLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setNotFound(true);
+          setLoading(false);
+        }
+      }
     });
 
-    const itemsQuery = query(collection(db, 'packs', id, 'packItems'), orderBy('order'));
-    const unsubItems = onSnapshot(itemsQuery, snap => {
-      setItems(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    return () => { unsubPack(); unsubItems(); };
-  }, [id]);
+    return () => {
+      cancelled = true;
+      unsubPack();
+      if (unsubItems) unsubItems();
+    };
+  }, [slugOrId]);
 
   return { pack, items, loading, notFound };
 }
 
 export default function PackDetail() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
-  const { pack, items, loading, notFound } = usePackDetail(id);
+  const { pack, items, loading, notFound } = usePackDetail(slug);
   const { products: allProducts } = useProducts();
   const { getCategoryName } = useCategories();
   const { addToCart } = useCart();
