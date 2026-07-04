@@ -18,10 +18,11 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install & Build
-        run: |
-          npm install
-          npm run build
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
@@ -30,8 +31,13 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
+      - name: Copy CNAME to dist
+        run: |
+          echo "younasser.ma" > dist/CNAME
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          force_orphan: true
