@@ -182,7 +182,7 @@ export default function Dashboard() {
         <div className="flex gap-4 min-h-[260px]">
           <Panel
             title="Dernières ventes"
-            action={<Link to="/commandes?tab=ventes" className="text-[11px] font-semibold text-[#2563eb] hover:underline">Voir toutes les ventes →</Link>}
+            action={<Link to="/admin/commandes?tab=ventes" className="text-[11px] font-semibold text-[#2563eb] hover:underline">Voir toutes les ventes →</Link>}
           >
             {recentSales.length === 0 ? (
               <EmptyState text="Aucune vente enregistrée pour le moment." />

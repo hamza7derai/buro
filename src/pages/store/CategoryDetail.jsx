@@ -157,16 +157,16 @@ export default function CategoryDetail() {
   return (
     <div className="flex flex-col gap-5 px-4 lg:px-0 py-4">
       <div className="flex items-center gap-1.5 text-[12px] text-txt-2 overflow-x-auto whitespace-nowrap">
-        <Link to="/store" className="hover:text-txt-1">Accueil</Link>
+        <Link to="/" className="hover:text-txt-1">Accueil</Link>
         <ChevronRight size={12} className="shrink-0" />
-        <Link to="/store/categories" className="hover:text-txt-1">Catégories</Link>
+        <Link to="/categories" className="hover:text-txt-1">Catégories</Link>
         <ChevronRight size={12} className="shrink-0" />
         <span className="text-txt-1 font-medium">{category?.name || 'Catégorie'}</span>
       </div>
 
       {!catLoading && !category ? (
         <p className="text-[13px] text-txt-3">
-          Catégorie introuvable. <Link to="/store/categories" className="text-blue">Retour aux catégories</Link>
+          Catégorie introuvable. <Link to="/categories" className="text-blue">Retour aux catégories</Link>
         </p>
       ) : (
         <>

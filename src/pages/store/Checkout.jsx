@@ -182,7 +182,7 @@ export default function Checkout() {
         <ShoppingBag size={40} className="text-txt-3" />
         <h1 className="text-lg font-bold text-txt-1">Votre panier est vide</h1>
         <p className="text-[13px] text-txt-2 max-w-xs">Ajoutez des articles avant de passer commande.</p>
-        <Link to="/store" className="mt-2 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
+        <Link to="/" className="mt-2 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
           Voir nos produits
         </Link>
       </div>
@@ -211,13 +211,13 @@ export default function Checkout() {
 
         <div className="flex flex-col gap-3 w-full">
           <Link
-            to="/store/profil"
+            to="/profil"
             className="flex items-center justify-center gap-2 bg-blue text-white text-[14px] font-semibold px-6 py-3.5 rounded-xl hover:opacity-90 transition-opacity"
           >
             Suivre ma commande <ArrowRight size={16} />
           </Link>
           <Link
-            to="/store"
+            to="/"
             className="flex items-center justify-center gap-2 bg-surface-1 border border-bord text-txt-1 text-[14px] font-semibold px-6 py-3.5 rounded-xl hover:bg-surface-2 transition-colors"
           >
             Continuer mes achats

@@ -259,7 +259,7 @@ Merci! 🙏`;
   }
 
   function handleReprendre(record) {
-    navigate('/pos', { state: { resumeDraft: { id: record.id, ...record } } });
+    navigate('/admin/pos', { state: { resumeDraft: { id: record.id, ...record } } });
   }
 
   function handleInvoice() {

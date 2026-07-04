@@ -293,7 +293,7 @@ export default function POS() {
   function addNotFoundAsNewProduct() {
     const barcode = notFoundBarcode;
     setNotFoundOpen(false);
-    navigate('/produits/nouveau', { state: { prefillBarcode: barcode } });
+    navigate('/admin/produits/nouveau', { state: { prefillBarcode: barcode } });
   }
 
   // Calculations

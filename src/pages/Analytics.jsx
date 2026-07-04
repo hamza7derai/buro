@@ -339,7 +339,7 @@ export default function Analytics() {
                         </span>
                       </td>
                       <td className="p-4 text-right">
-                        <button onClick={() => navigate(`/produits/${p.id}`)} className="px-2.5 py-1 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+                        <button onClick={() => navigate(`/admin/produits/${p.id}`)} className="px-2.5 py-1 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
                           Modifier
                         </button>
                       </td>

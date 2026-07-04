@@ -18,7 +18,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate('/');
+      navigate('/admin');
     } catch (err) {
       if (err.code === 'auth/invalid-credential') {
         setError('Email ou mot de passe incorrect');

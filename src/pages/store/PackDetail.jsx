@@ -103,7 +103,7 @@ export default function PackDetail() {
       <div className="flex flex-col items-center justify-center gap-3 px-4 py-20 text-center">
         <Gift size={40} className="text-txt-3" />
         <h1 className="text-lg font-bold text-txt-1">Pack introuvable</h1>
-        <Link to="/store/packs" className="mt-2 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
+        <Link to="/packs" className="mt-2 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
           Retour aux packs
         </Link>
       </div>
@@ -121,7 +121,7 @@ export default function PackDetail() {
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-surface-1 border border-bord flex items-center justify-center text-txt-1">
           <ArrowLeft size={18} />
         </button>
-        <Link to="/store/panier" className="relative w-9 h-9 rounded-full bg-surface-1 border border-bord flex items-center justify-center text-navy">
+        <Link to="/panier" className="relative w-9 h-9 rounded-full bg-surface-1 border border-bord flex items-center justify-center text-navy">
           <ShoppingCart size={18} />
         </Link>
       </div>

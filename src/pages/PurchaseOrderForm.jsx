@@ -67,7 +67,7 @@ export default function PurchaseOrderForm() {
   useEffect(() => {
     if (isEditing && !ordersLoading && !order) {
       toast('Bon de commande introuvable', 'error');
-      navigate('/achats');
+      navigate('/admin/achats');
     }
   }, [isEditing, ordersLoading, order]);
 
@@ -169,7 +169,7 @@ export default function PurchaseOrderForm() {
       if (isEditing) await updatePurchaseOrder(orderId, payload);
       else await createPurchaseOrder(orderId, payload);
       toast('Brouillon enregistré');
-      navigate('/achats');
+      navigate('/admin/achats');
     } catch (err) {
       console.error(err);
       toast("Erreur lors de l'enregistrement", 'error');
@@ -194,7 +194,7 @@ export default function PurchaseOrderForm() {
       printPurchaseOrder({ ...payload, orderNumber, id: orderId }, supplier);
 
       toast('Bon de commande généré');
-      if (!isEditing) navigate(`/achats/${orderId}`);
+      if (!isEditing) navigate(`/admin/achats/${orderId}`);
     } catch (err) {
       console.error(err);
       toast('Erreur lors de la génération du PDF', 'error');
@@ -390,7 +390,7 @@ export default function PurchaseOrderForm() {
 
       {/* Bottom bar */}
       <div className="shrink-0 bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between gap-4">
-        <button onClick={() => navigate('/achats')} className="px-5 py-2.5 rounded-lg border border-gray-300 text-[#1a1a2e] font-medium text-[14px] hover:bg-gray-50 transition-colors">
+        <button onClick={() => navigate('/admin/achats')} className="px-5 py-2.5 rounded-lg border border-gray-300 text-[#1a1a2e] font-medium text-[14px] hover:bg-gray-50 transition-colors">
           Annuler
         </button>
         <span className="text-[13px] text-gray-500 font-medium">

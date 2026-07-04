@@ -44,7 +44,7 @@ function PackCard({ pack }) {
   }
 
   return (
-    <Link to={`/store/packs/${pack.id}`} className="relative bg-white rounded-xl shadow-sm overflow-hidden flex flex-col items-center gap-2.5 p-4 hover:shadow-md transition-shadow">
+    <Link to={`/packs/${pack.id}`} className="relative bg-white rounded-xl shadow-sm overflow-hidden flex flex-col items-center gap-2.5 p-4 hover:shadow-md transition-shadow">
       {pct > 0 && (
         <span className="absolute top-3 left-3 bg-danger text-white text-[11px] font-bold px-2 py-0.5 rounded-full">-{pct}%</span>
       )}

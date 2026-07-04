@@ -29,7 +29,7 @@ import StoreProfil from './pages/store/Profil';
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen />;
-  return user ? children : <Navigate to="/login" />;
+  return user ? children : <Navigate to="/admin/login" />;
 }
 
 function LoadingScreen() {
@@ -48,8 +48,8 @@ function LoadingScreen() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/" element={
+      <Route path="/admin/login" element={<Login />} />
+      <Route path="/admin" element={
         <PrivateRoute>
           <POSCartProvider>
             <Layout />
@@ -71,7 +71,7 @@ export default function App() {
         <Route path="achats/:id" element={<PurchaseOrderForm />} />
         <Route path="analytics" element={<Analytics />} />
       </Route>
-      <Route path="/store" element={<StoreLayout />}>
+      <Route path="/" element={<StoreLayout />}>
         <Route index element={<StoreHome />} />
         <Route path="categories" element={<StoreCategories />} />
         <Route path="categories/:slug" element={<StoreCategoryDetail />} />

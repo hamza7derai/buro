@@ -161,16 +161,52 @@ Store config: name, currency, delivery settings, WhatsApp number, school year
 
 ---
 
+## Routing
+
+The storefront is the public default at the root; POS/admin lives under `/admin` and requires authentication.
+
+| Route | Page |
+|---|---|
+| `/` | Storefront Home |
+| `/categories` | Storefront Categories |
+| `/categories/:slug` | Storefront Category detail |
+| `/produit/:id` | Storefront Product detail |
+| `/manuels` | Storefront Manuels scolaires |
+| `/packs` | Storefront Packs scolaires |
+| `/packs/:id` | Storefront Pack detail |
+| `/panier` | Storefront Cart |
+| `/checkout` | Storefront Checkout |
+| `/profil` | Storefront Profile |
+| `/admin/login` | Login (public, redirects to `/admin` on success) |
+| `/admin` | Dashboard (private) |
+| `/admin/pos` | POS sale screen (private) |
+| `/admin/produits` | Products list (private) |
+| `/admin/produits/nouveau` | Add product (private) |
+| `/admin/produits/:id` | Edit product (private) |
+| `/admin/packs` | Packs management (private) |
+| `/admin/packs/nouveau` | Pack builder — new (private) |
+| `/admin/packs/:id` | Pack builder — edit (private) |
+| `/admin/commandes` | Orders (private) |
+| `/admin/clients` | Clients (private) |
+| `/admin/analytics` | Analytics (private) |
+| `/admin/achats` | Purchase orders (private) |
+| `/admin/achats/nouveau` | Purchase order — new (private) |
+| `/admin/achats/:id` | Purchase order — edit (private) |
+
+All `/admin/*` routes (except `/admin/login`) are wrapped in `PrivateRoute` and require Firebase Auth; unauthenticated visitors are redirected to `/admin/login`. The `/` storefront routes are fully public. Route paths are defined in `src/App.jsx`; the POS sidebar (`src/components/Layout.jsx`) links to `/admin/*`, the storefront layout (`src/components/StoreLayout.jsx`) links to the root paths.
+
+---
+
 ## Pages & Features
 
 ### POS Pages (Dark Theme)
 
-#### Login (`/login`)
+#### Login (`/admin/login`)
 - Email/password form
 - Firebase Auth
-- Redirects to POS after login
+- Redirects to `/admin` (Dashboard) after login
 
-#### Sale Screen (`/` — default)
+#### Sale Screen (`/admin/pos`)
 - Sidebar icon navigation (left)
 - Top bar: client dropdown selector with "+" to add new client, barcode search input
 - Center: cart table with columns: #, code-barre, article (with thumbnail), stock badge (green circle with count), quantity controls (−/+), prix unitaire, total, delete button
@@ -180,13 +216,13 @@ Store config: name, currency, delivery settings, WhatsApp number, school year
 - Bottom bar: article count, "Vider la liste" button
 - Clock + date bottom left, user avatar bottom left
 
-#### Products (`/produits`)
+#### Products (`/admin/produits`)
 - Product list table with search
 - Columns: image thumbnail, name, barcode, category, sell price, stock badge, visibility toggle, actions
 - Admin sees: cost price, margin columns
 - "+ Ajouter" button opens full product form
 
-#### Add/Edit Product (`/produits/nouveau` or `/produits/:id`)
+#### Add/Edit Product (`/admin/produits/nouveau` or `/admin/produits/:id`)
 - Full-page form with sections:
   1. Informations générales: name, description, barcode (scannable), SKU, type selector (Standard/Manuel/Pack)
   2. Média: main image upload, gallery upload, per-variant images
@@ -199,15 +235,14 @@ Store config: name, currency, delivery settings, WhatsApp number, school year
   9. Produits liés: search+add related, search+add frequently-bought-with
 - Sticky bottom bar: Annuler + Sauvegarder
 
-#### Clients (`/clients`)
+#### Clients (`/admin/clients`)
 - Client list with search, filter pills (Tous/Particuliers/Entreprises)
 - Table: name, phone, ICE, type badge, total spent, purchases count, last purchase
 - Click opens detail: full info + purchase history timeline
 - "Générer facture consolidée" with date range picker
 - "+ Ajouter" opens form: name, phone, ICE, type, address, notes
 
-#### Admin Analytics (toggle panel inside POS, admin only)
-- NOT a separate page — collapsible panel/overlay
+#### Admin Analytics (`/admin/analytics`, admin only)
 - Stat cards: today's revenue, today's profit, sales count, items sold
 - Revenue chart (last 7 days)
 - Top 5 products today
@@ -215,7 +250,7 @@ Store config: name, currency, delivery settings, WhatsApp number, school year
 
 ### Storefront Pages (Light Theme, Mobile-First Responsive)
 
-#### Home (`/store`)
+#### Home (`/`)
 - Logo + cart icon with badge
 - Search bar
 - Category icons (horizontal scroll): Fournitures scolaires, Bureau & Impression, Livres & Culture, Sacs & Accessoires, Jeux & Électronique
@@ -224,13 +259,13 @@ Store config: name, currency, delivery settings, WhatsApp number, school year
 - Product card: image, name, category tag (colored), old price crossed, new price DH, stock dot, "+" button
 - Bottom nav: Accueil, Catégories, Manuels, Favoris, Profil
 
-#### Categories (`/store/categories/:slug`)
+#### Categories (`/categories/:slug`)
 - Category title + product count
 - Filter chips: subcategory, price, stock, sort
 - 2-column product grid
 - Product cards with badges (Vedette/Nouveau/Promo)
 
-#### Product Detail (`/store/produit/:slug`)
+#### Product Detail (`/produit/:slug`)
 - Image carousel with thumbnails
 - Name, rating, reference, stock badge
 - Price with old price + discount badge
@@ -240,31 +275,31 @@ Store config: name, currency, delivery settings, WhatsApp number, school year
 - Related products
 - "Souvent achetés ensemble" bundle
 
-#### Manuels Scolaires (`/store/manuels`)
+#### Manuels Scolaires (`/manuels`)
 - Search + filters (Niveau, Matière, Éditeur)
 - "Manuel introuvable?" banner → WhatsApp
 - Quick access: level chips
 - Results: book cover, title, metadata, rating, price, stock, add button
 
-#### Packs Scolaires (`/store/packs`)
+#### Packs Scolaires (`/packs`)
 - Level filter pills
 - Trust badges
 - Pack cards: image, badge, name, item count, original/discounted price
 - Pack detail: item list grouped by category, removable items, upsells, live price recalculation
 
-#### School Entry (`/store/ecoles`)
+#### School Entry (`/ecoles`)
 - Select school → select grade → see official list
 - Items with checkboxes, "Requis"/"Recommandé" tags
 - Upsell section
 - "Commander la liste" button
 
-#### Cart (`/store/panier`)
+#### Cart (`/panier`)
 - Item list with images, variant info, quantity, prices
 - Discount code
 - Order summary
 - "Commander" button
 
-#### Checkout (`/store/checkout`)
+#### Checkout (`/checkout`)
 - Step progress: Informations → Livraison → Paiement
 - Customer form, delivery options, payment methods
 - Order summary, confirm button

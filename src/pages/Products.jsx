@@ -78,7 +78,7 @@ export default function Products() {
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   function handleDuplicate(product) {
-    navigate('/produits/nouveau', { state: { duplicateFrom: product } });
+    navigate('/admin/produits/nouveau', { state: { duplicateFrom: product } });
   }
 
   async function handleDelete(product) {
@@ -136,7 +136,7 @@ export default function Products() {
             <p className="text-[13px] text-gray-400">{products.length} article{products.length !== 1 ? 's' : ''}</p>
           </div>
           <div className="ml-auto">
-            <button onClick={() => navigate('/produits/nouveau')} className="px-4 py-2 rounded-lg bg-[#F5A623] hover:bg-[#d6890f] text-[#1a1a2e] font-semibold text-sm transition-colors">
+            <button onClick={() => navigate('/admin/produits/nouveau')} className="px-4 py-2 rounded-lg bg-[#F5A623] hover:bg-[#d6890f] text-[#1a1a2e] font-semibold text-sm transition-colors">
               + Ajouter
             </button>
           </div>
@@ -280,7 +280,7 @@ export default function Products() {
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          <button onClick={() => navigate(`/produits/${p.id}`)} className="px-2.5 py-1 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Modifier</button>
+                          <button onClick={() => navigate(`/admin/produits/${p.id}`)} className="px-2.5 py-1 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Modifier</button>
                           <button onClick={() => handleDuplicate(p)} className="px-2.5 py-1 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Copier</button>
                           {isAdmin && (
                             <button onClick={() => setConfirmDelete(p)} className="px-2.5 py-1 rounded-md text-[11px] font-semibold text-[#ef4444] bg-[#ef4444]/10 hover:bg-[#ef4444]/20 transition-colors">Suppr.</button>

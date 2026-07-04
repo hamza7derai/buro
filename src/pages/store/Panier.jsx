@@ -27,7 +27,7 @@ export default function Panier() {
         <ShoppingCart size={40} className="text-txt-3" />
         <h1 className="text-lg font-bold text-txt-1">Votre panier est vide</h1>
         <p className="text-[13px] text-txt-2 max-w-xs">Parcourez nos catégories pour trouver vos fournitures, manuels et accessoires.</p>
-        <Link to="/store" className="mt-2 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
+        <Link to="/" className="mt-2 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
           Voir nos produits
         </Link>
       </div>
@@ -120,10 +120,10 @@ export default function Panier() {
           <span className="font-mono text-navy">{formatPrice(cartTotal - discountAmount + deliveryFee)}</span>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 mt-1">
-          <Link to="/store" className="flex-1 text-center bg-surface-3 text-txt-1 text-[13px] font-semibold py-3 rounded-xl hover:bg-bord transition-colors">
+          <Link to="/" className="flex-1 text-center bg-surface-3 text-txt-1 text-[13px] font-semibold py-3 rounded-xl hover:bg-bord transition-colors">
             Continuer mes achats
           </Link>
-          <Link to="/store/checkout" className="flex-1 text-center bg-blue text-white text-[14px] font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity">
+          <Link to="/checkout" className="flex-1 text-center bg-blue text-white text-[14px] font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity">
             Commander
           </Link>
         </div>

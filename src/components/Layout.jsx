@@ -11,14 +11,14 @@ function getInitials(name) {
 }
 
 const NAV_ITEMS = [
-  { to: '/', icon: LayoutDashboard, label: 'Tableau de bord', end: true },
-  { to: '/pos', icon: ShoppingCart, label: 'Vente' },
-  { to: '/produits', icon: Package, label: 'Produits' },
-  { to: '/packs', icon: Gift, label: 'Packs' },
-  { to: '/commandes', icon: ClipboardList, label: 'Commandes' },
-  { to: '/achats', icon: Truck, label: 'Achats' },
-  { to: '/clients', icon: Users, label: 'Clients' },
-  { to: '/analytics', icon: BarChart3, label: 'Analytics' },
+  { to: '/admin', icon: LayoutDashboard, label: 'Tableau de bord', end: true },
+  { to: '/admin/pos', icon: ShoppingCart, label: 'Vente' },
+  { to: '/admin/produits', icon: Package, label: 'Produits' },
+  { to: '/admin/packs', icon: Gift, label: 'Packs' },
+  { to: '/admin/commandes', icon: ClipboardList, label: 'Commandes' },
+  { to: '/admin/achats', icon: Truck, label: 'Achats' },
+  { to: '/admin/clients', icon: Users, label: 'Clients' },
+  { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
 ];
 
 export default function Layout() {

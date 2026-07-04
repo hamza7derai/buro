@@ -130,7 +130,7 @@ export default function Profil() {
       addToCart(product, null, item.quantity);
     }
     if (skipped > 0) toast('Certains articles ne sont plus disponibles', 'info');
-    navigate('/store/panier');
+    navigate('/panier');
   }
 
   // ── Landing state ────────────────────────────────────────────────────────
@@ -241,7 +241,7 @@ export default function Profil() {
             <h3 className="text-[14px] font-bold text-txt-1">Aucune commande trouvée</h3>
             <p className="text-[13px] text-txt-2">Ce numéro n'a pas encore de commandes.</p>
             <Link
-              to="/store"
+              to="/"
               className="mt-1 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
             >
               Découvrir nos produits
@@ -373,7 +373,7 @@ export default function Profil() {
             <p className="text-[13px] text-txt-2 max-w-xs">
               Parcourez nos produits et ajoutez vos articles préférés.
             </p>
-            <Link to="/store" className="text-[13px] text-blue hover:underline font-medium">
+            <Link to="/" className="text-[13px] text-blue hover:underline font-medium">
               Parcourir les produits
             </Link>
           </div>

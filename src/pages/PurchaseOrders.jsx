@@ -71,7 +71,7 @@ export default function PurchaseOrders() {
             <p className="text-[13px] text-gray-400">Gérez vos commandes fournisseurs.</p>
           </div>
           <div className="ml-auto">
-            <button onClick={() => navigate('/achats/nouveau')} className="px-4 py-2 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold text-sm transition-colors">
+            <button onClick={() => navigate('/admin/achats/nouveau')} className="px-4 py-2 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold text-sm transition-colors">
               + Nouveau bon de commande
             </button>
           </div>
@@ -111,7 +111,7 @@ export default function PurchaseOrders() {
                 {paged.map((o, i) => {
                   const meta = poStatusMeta(o.status);
                   return (
-                    <tr key={o.id} className="border-t border-gray-100 hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/achats/${o.id}`)}>
+                    <tr key={o.id} className="border-t border-gray-100 hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/admin/achats/${o.id}`)}>
                       <td className="p-4 text-[12px] text-gray-400 font-mono">{(currentPage - 1) * PAGE_SIZE + i + 1}</td>
                       <td className="p-4 font-mono text-[12px] font-semibold text-[#1a1a2e]">{o.orderNumber}</td>
                       <td className="p-4 text-[12px] text-gray-400 font-mono whitespace-nowrap">{fmtDate(o.createdAt)}</td>
@@ -120,8 +120,8 @@ export default function PurchaseOrders() {
                       <td className="p-4 text-center"><span className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border ${meta.cls}`}>{meta.label}</span></td>
                       <td className="p-4 text-right" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => navigate(`/achats/${o.id}`)} className="text-gray-400 hover:text-[#2563eb] transition-colors" title="Voir"><Eye size={15} /></button>
-                          <button onClick={() => navigate(`/achats/${o.id}`)} className="text-gray-400 hover:text-[#1a1a2e] transition-colors" title="Modifier"><Pencil size={14} /></button>
+                          <button onClick={() => navigate(`/admin/achats/${o.id}`)} className="text-gray-400 hover:text-[#2563eb] transition-colors" title="Voir"><Eye size={15} /></button>
+                          <button onClick={() => navigate(`/admin/achats/${o.id}`)} className="text-gray-400 hover:text-[#1a1a2e] transition-colors" title="Modifier"><Pencil size={14} /></button>
                           <button onClick={() => handlePdf(o)} className="text-gray-400 hover:text-[#1a1a2e] transition-colors" title="PDF"><FileText size={14} /></button>
                           <button onClick={() => setConfirmDelete(o)} className="text-gray-400 hover:text-[#ef4444] transition-colors" title="Supprimer"><Trash2 size={14} /></button>
                         </div>

@@ -149,7 +149,7 @@ export default function PackBuilder() {
     if (!isEditing && localStorage.getItem(PACK_DRAFT_KEY)) {
       setShowCancelConfirm(true);
     } else {
-      navigate('/packs');
+      navigate('/admin/packs');
     }
   }
 
@@ -157,7 +157,7 @@ export default function PackBuilder() {
     if (!isEditing) return;
     (async () => {
       const snap = await getDoc(doc(db, 'packs', id));
-      if (!snap.exists()) { toast('Pack introuvable', 'error'); navigate('/packs'); return; }
+      if (!snap.exists()) { toast('Pack introuvable', 'error'); navigate('/admin/packs'); return; }
       const data = snap.data();
       setForm(f => ({
         ...f,
@@ -296,7 +296,7 @@ export default function PackBuilder() {
 
       if (!isEditing) localStorage.removeItem(PACK_DRAFT_KEY);
       toast(`Pack ${status === 'draft' ? 'enregistré comme brouillon' : 'publié'}`);
-      navigate('/packs');
+      navigate('/admin/packs');
     } catch (err) {
       console.error(err);
       toast('Erreur lors de la sauvegarde', 'error');
@@ -617,8 +617,8 @@ export default function PackBuilder() {
             <h3 className="text-lg font-bold text-[#1a1a2e] mb-3">Voulez-vous sauvegarder ce brouillon ?</h3>
             <p className="text-sm text-gray-500 mb-6">Vous pourrez reprendre ce pack la prochaine fois que vous ouvrirez le formulaire de création.</p>
             <div className="flex gap-3">
-              <button onClick={() => { localStorage.removeItem(PACK_DRAFT_KEY); setShowCancelConfirm(false); navigate('/packs'); }} className="flex-1 py-2.5 rounded-lg border border-gray-300 text-[#1a1a2e] font-medium text-[13px] hover:bg-gray-50 transition-colors">Non</button>
-              <button onClick={() => { setShowCancelConfirm(false); navigate('/packs'); }} className="flex-1 py-2.5 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-medium text-[13px] transition-colors">Oui</button>
+              <button onClick={() => { localStorage.removeItem(PACK_DRAFT_KEY); setShowCancelConfirm(false); navigate('/admin/packs'); }} className="flex-1 py-2.5 rounded-lg border border-gray-300 text-[#1a1a2e] font-medium text-[13px] hover:bg-gray-50 transition-colors">Non</button>
+              <button onClick={() => { setShowCancelConfirm(false); navigate('/admin/packs'); }} className="flex-1 py-2.5 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-medium text-[13px] transition-colors">Oui</button>
             </div>
           </div>
         </div>

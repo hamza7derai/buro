@@ -70,7 +70,7 @@ export default function Packs() {
             <h1 className="text-xl font-bold text-[#1a1a2e]">Packs scolaires</h1>
             <p className="text-[13px] text-gray-400">Créez et gérez vos packs de rentrée.</p>
           </div>
-          <button onClick={() => navigate('/packs/nouveau')} className="ml-auto px-4 py-2 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold text-sm transition-colors">
+          <button onClick={() => navigate('/admin/packs/nouveau')} className="ml-auto px-4 py-2 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold text-sm transition-colors">
             + Créer un pack
           </button>
         </div>
@@ -138,7 +138,7 @@ export default function Packs() {
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          <button onClick={() => navigate(`/packs/${p.id}`)} className="px-2.5 py-1 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Modifier</button>
+                          <button onClick={() => navigate(`/admin/packs/${p.id}`)} className="px-2.5 py-1 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Modifier</button>
                           <button onClick={() => handleDuplicate(p)} className="px-2.5 py-1 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Dupliquer</button>
                           <button onClick={() => setConfirmDelete(p)} className="px-2.5 py-1 rounded-md text-[11px] font-semibold text-[#ef4444] bg-[#ef4444]/10 hover:bg-[#ef4444]/20 transition-colors">Suppr.</button>
                         </div>

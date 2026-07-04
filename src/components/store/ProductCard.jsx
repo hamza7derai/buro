@@ -20,7 +20,7 @@ export default function ProductCard({ product, className = '' }) {
   const inStock = stockState !== 'out';
   const subcategoryRaw = product.categoryPath?.[1] || product.subcategory || '';
   const categoryLabel = getCategoryName(subcategoryRaw) || getCategoryName(product.categoryPath?.[0]) || '';
-  const href = `/store/produit/${product.id}`;
+  const href = `/produit/${product.id}`;
 
   const hasSizeVariants = product.variantTypes?.some(t => t === 'taille' || t === 'size');
   const showStartingFrom = !!product.variantPricesVary && !!hasSizeVariants;

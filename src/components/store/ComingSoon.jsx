@@ -6,7 +6,7 @@ export default function ComingSoon({ icon: Icon, title, message }) {
       {Icon && <Icon size={40} className="text-txt-3" />}
       <h1 className="text-lg font-bold text-txt-1">{title}</h1>
       <p className="text-[13px] text-txt-2 max-w-xs">{message}</p>
-      <Link to="/store" className="mt-2 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
+      <Link to="/" className="mt-2 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
         Retour à l'accueil
       </Link>
     </div>

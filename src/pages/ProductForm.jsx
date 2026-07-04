@@ -223,7 +223,7 @@ export default function ProductForm() {
     if (!isEditing && localStorage.getItem(PRODUCT_DRAFT_KEY)) {
       setShowCancelConfirm(true);
     } else {
-      navigate('/produits');
+      navigate('/admin/produits');
     }
   }
 
@@ -232,7 +232,7 @@ export default function ProductForm() {
     if (!isEditing) return;
     (async () => {
       const snap = await getDoc(doc(db, 'products', id));
-      if (!snap.exists()) { toast('Produit introuvable', 'error'); navigate('/produits'); return; }
+      if (!snap.exists()) { toast('Produit introuvable', 'error'); navigate('/admin/produits'); return; }
       const data = snap.data();
       setForm(f => ({
         ...f,
@@ -593,7 +593,7 @@ export default function ProductForm() {
 
       if (!isEditing) localStorage.removeItem(PRODUCT_DRAFT_KEY);
       toast(`${form.name} ${isEditing ? 'mis à jour' : 'ajouté'}`);
-      navigate('/produits');
+      navigate('/admin/produits');
     } catch (err) {
       console.error(err);
       toast('Erreur lors de la sauvegarde', 'error');
@@ -1133,8 +1133,8 @@ export default function ProductForm() {
             <h3 className="text-lg font-bold text-[#1a1a2e] mb-3">Voulez-vous sauvegarder ce brouillon ?</h3>
             <p className="text-sm text-gray-500 mb-6">Vous pourrez reprendre ce produit la prochaine fois que vous ouvrirez le formulaire d'ajout.</p>
             <div className="flex gap-3">
-              <button onClick={() => { localStorage.removeItem(PRODUCT_DRAFT_KEY); setShowCancelConfirm(false); navigate('/produits'); }} className="flex-1 py-2.5 rounded-lg border border-gray-300 text-[#1a1a2e] font-medium text-[13px] hover:bg-gray-50 transition-colors">Non</button>
-              <button onClick={() => { setShowCancelConfirm(false); navigate('/produits'); }} className="flex-1 py-2.5 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-medium text-[13px] transition-colors">Oui</button>
+              <button onClick={() => { localStorage.removeItem(PRODUCT_DRAFT_KEY); setShowCancelConfirm(false); navigate('/admin/produits'); }} className="flex-1 py-2.5 rounded-lg border border-gray-300 text-[#1a1a2e] font-medium text-[13px] hover:bg-gray-50 transition-colors">Non</button>
+              <button onClick={() => { setShowCancelConfirm(false); navigate('/admin/produits'); }} className="flex-1 py-2.5 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-medium text-[13px] transition-colors">Oui</button>
             </div>
           </div>
         </div>

@@ -65,7 +65,7 @@ export default function Categories() {
             return (
               <Link
                 key={cat.slug || i}
-                to={`/store/categories/${cat.slug}`}
+                to={`/categories/${cat.slug}`}
                 className="relative flex flex-col items-center text-center gap-1 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 h-[230px]"
               >
                 <ChevronRight size={18} className="absolute top-4 right-4 text-txt-3" />

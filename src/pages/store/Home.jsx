@@ -58,7 +58,7 @@ export default function Home() {
 
           {/* CTA button */}
           <Link
-            to="/store/categories"
+            to="/categories"
             className="inline-flex items-center gap-1.5 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
           >
             Découvrir les catégories →
@@ -101,7 +101,7 @@ export default function Home() {
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[15px] font-bold text-navy">Catégories populaires</h2>
-          <Link to="/store/categories" className="text-[12px] text-blue flex items-center gap-0.5">
+          <Link to="/categories" className="text-[12px] text-blue flex items-center gap-0.5">
             Voir toutes <ChevronRight size={14} />
           </Link>
         </div>
@@ -111,7 +111,7 @@ export default function Home() {
             return (
               <Link
                 key={cat.slug || i}
-                to={`/store/categories/${cat.slug}`}
+                to={`/categories/${cat.slug}`}
                 className="flex flex-col items-center justify-center gap-1.5 shrink-0 w-[120px] lg:w-auto bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-2.5"
               >
                 {image ? <img src={import.meta.env.BASE_URL + image} alt="" className="w-16 h-16 object-contain" /> : <Icon size={32} style={{ color }} />}
@@ -126,7 +126,7 @@ export default function Home() {
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[15px] font-bold text-txt-1">Nos meilleures ventes</h2>
-          <Link to="/store/categories" className="text-[12px] text-blue flex items-center gap-0.5">
+          <Link to="/categories" className="text-[12px] text-blue flex items-center gap-0.5">
             Voir tout <ChevronRight size={14} />
           </Link>
         </div>

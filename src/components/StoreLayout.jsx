@@ -12,11 +12,11 @@ import { formatPrice, getPrice } from '../lib/pricing';
 import { buildWhatsAppLink } from '../lib/contact';
 
 const NAV_LINKS = [
-  { to: '/store', icon: Home, label: 'Accueil', desktopLabel: 'Accueil', end: true },
-  { to: '/store/categories', icon: Grid3x3, label: 'Catégories', desktopLabel: 'Catégories' },
-  { to: '/store/manuels', icon: BookOpen, label: 'Manuels', desktopLabel: 'Manuels scolaires' },
-  { to: '/store/packs', icon: Gift, label: 'Pack', desktopLabel: 'Pack & Offres' },
-  { to: '/store/profil', icon: User, label: 'Profil', desktopLabel: 'Profil' },
+  { to: '/', icon: Home, label: 'Accueil', desktopLabel: 'Accueil', end: true },
+  { to: '/categories', icon: Grid3x3, label: 'Catégories', desktopLabel: 'Catégories' },
+  { to: '/manuels', icon: BookOpen, label: 'Manuels', desktopLabel: 'Manuels scolaires' },
+  { to: '/packs', icon: Gift, label: 'Pack', desktopLabel: 'Pack & Offres' },
+  { to: '/profil', icon: User, label: 'Profil', desktopLabel: 'Profil' },
 ];
 
 export default function StoreLayout() {
@@ -24,7 +24,7 @@ export default function StoreLayout() {
   const { products } = useProducts();
   const { favCount } = useFavorites();
   const location = useLocation();
-  const isCheckout = location.pathname === '/store/checkout';
+  const isCheckout = location.pathname === '/checkout';
   const [hasProfile, setHasProfile] = useState(false);
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -89,10 +89,10 @@ export default function StoreLayout() {
     if (!search.trim()) return;
     setShowDropdown(false);
     if (searchResults.length > 0) {
-      navigate(`/store/produit/${searchResults[0].id}`);
+      navigate(`/produit/${searchResults[0].id}`);
       setSearch('');
     } else {
-      navigate(`/store/categories?q=${encodeURIComponent(search.trim())}`);
+      navigate(`/categories?q=${encodeURIComponent(search.trim())}`);
     }
   }
 
@@ -101,10 +101,10 @@ export default function StoreLayout() {
       <header className="sticky top-0 z-30 bg-surface-1 border-b border-bord">
         {/* Mobile top bar */}
         <div className="lg:hidden h-14 flex items-center justify-between px-4">
-          <Link to="/store" className="font-extrabold text-lg text-navy tracking-wide">
+          <Link to="/" className="font-extrabold text-lg text-navy tracking-wide">
             younasser<span style={{ color: '#FFC107' }}>.</span>
           </Link>
-          <Link to="/store/panier" className="relative w-9 h-9 rounded-lg bg-blue flex items-center justify-center">
+          <Link to="/panier" className="relative w-9 h-9 rounded-lg bg-blue flex items-center justify-center">
             <ShoppingCart size={18} className="text-white" />
             {cartCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-brand-500 text-[10px] font-bold text-white flex items-center justify-center">
@@ -116,7 +116,7 @@ export default function StoreLayout() {
 
         {/* Desktop top bar */}
         <div className="hidden lg:flex items-center gap-6 h-16 px-8">
-          <Link to="/store" className="shrink-0">
+          <Link to="/" className="shrink-0">
             <div className="font-extrabold text-xl text-navy tracking-wide leading-none">
               younasser<span style={{ color: '#FFC107' }}>.</span>
             </div>
@@ -147,7 +147,7 @@ export default function StoreLayout() {
                   <div className="px-4 py-4">
                     <p className="text-[13px] text-txt-2">Aucun résultat pour <span className="font-semibold text-txt-1">"{search}"</span></p>
                     <Link
-                      to="/store/categories"
+                      to="/categories"
                       className="text-[12px] text-blue mt-1 inline-block hover:underline"
                       onClick={() => setShowDropdown(false)}
                     >
@@ -161,7 +161,7 @@ export default function StoreLayout() {
                     return (
                       <Link
                         key={p.id}
-                        to={`/store/produit/${p.id}`}
+                        to={`/produit/${p.id}`}
                         className="flex items-center gap-3 px-4 py-2.5 hover:bg-surface-2 transition-colors border-b border-bord last:border-b-0"
                         onClick={() => { setShowDropdown(false); setSearch(''); }}
                       >
@@ -202,7 +202,7 @@ export default function StoreLayout() {
             >
               <HelpCircle size={14} /> Besoin d'aide?
             </a>
-            <Link to="/store/panier" className="relative flex items-center gap-2 text-navy">
+            <Link to="/panier" className="relative flex items-center gap-2 text-navy">
               <span className="relative w-9 h-9 rounded-lg bg-blue flex items-center justify-center">
                 <ShoppingCart size={18} className="text-white" />
                 {cartCount > 0 && (
@@ -213,7 +213,7 @@ export default function StoreLayout() {
               </span>
               {cartCount > 0 && <span className="text-[12px] font-mono font-semibold">{formatPrice(cartTotal)}</span>}
             </Link>
-            <Link to="/store/profil" className="text-navy">
+            <Link to="/profil" className="text-navy">
               <User size={20} />
             </Link>
           </div>
@@ -237,7 +237,7 @@ export default function StoreLayout() {
               >
                 <Icon size={17} />
                 {desktopLabel}
-                {to === '/store/profil' && favCount > 0 && (
+                {to === '/profil' && favCount > 0 && (
                   <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full bg-blue/15 text-blue text-[10px] font-bold flex items-center justify-center">
                     {favCount}
                   </span>
@@ -301,7 +301,7 @@ export default function StoreLayout() {
                   <span className="text-txt-2">Total</span>
                   <span className="font-mono text-navy">{formatPrice(cartTotal)}</span>
                 </div>
-                <Link to="/store/checkout" className="block text-center bg-blue text-white text-[13px] font-semibold py-2.5 rounded-xl hover:opacity-90 transition-opacity">
+                <Link to="/checkout" className="block text-center bg-blue text-white text-[13px] font-semibold py-2.5 rounded-xl hover:opacity-90 transition-opacity">
                   Commander
                 </Link>
               </>
@@ -312,7 +312,7 @@ export default function StoreLayout() {
             <h3 className="text-[13px] font-bold text-txt-1">Offres spéciales</h3>
 
             {/* Card 1 — Pack rentrée scolaire */}
-            <Link to="/store/packs" className="block bg-[#F5A623] rounded-2xl p-4">
+            <Link to="/packs" className="block bg-[#F5A623] rounded-2xl p-4">
               <div className="text-[12px] font-bold text-[#1e2956]">Pack rentrée scolaire</div>
               <div className="text-[11px] text-[#1e2956]/75 mt-1">Jusqu'à -20% sur une sélection</div>
               <span className="inline-block mt-3 bg-white text-[#1e2956] text-[11px] font-semibold rounded-full px-3 py-1">Découvrir</span>
@@ -323,7 +323,7 @@ export default function StoreLayout() {
               <BookOpen size={20} className="text-blue mb-2" />
               <div className="text-[12px] font-semibold text-txt-1">Vous cherchez un manuel en français&nbsp;?</div>
               <div className="text-[11px] text-txt-3 mt-1">Plus de 500 références disponibles</div>
-              <Link to="/store/manuels" className="inline-block mt-3 bg-blue text-white text-[11px] font-semibold rounded-xl px-3 py-1.5 hover:opacity-90 transition-opacity">
+              <Link to="/manuels" className="inline-block mt-3 bg-blue text-white text-[11px] font-semibold rounded-xl px-3 py-1.5 hover:opacity-90 transition-opacity">
                 Voir les manuels
               </Link>
             </div>
@@ -374,10 +374,10 @@ export default function StoreLayout() {
               <>
                 <div className="relative">
                   <Icon size={20} fill={isActive ? 'currentColor' : 'none'} strokeWidth={isActive ? 2 : 1.75} />
-                  {to === '/store/profil' && hasProfile && (
+                  {to === '/profil' && hasProfile && (
                     <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-success border border-surface-1" />
                   )}
-                  {to === '/store/profil' && favCount > 0 && !hasProfile && (
+                  {to === '/profil' && favCount > 0 && !hasProfile && (
                     <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] px-0.5 rounded-full bg-blue text-white text-[8px] font-bold flex items-center justify-center leading-none">
                       {favCount}
                     </span>
