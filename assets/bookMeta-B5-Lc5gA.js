@@ -1,0 +1,1 @@
+var e=[`Arabe`,`Français`,`Anglais`,`Bilingue`];function t(e){return(e||``).toLowerCase().includes(`livre`)}function n(e){return e?typeof e==`string`?e:e.fr||``:``}function r(e,t=!1){return e?typeof e==`string`?e:t&&e.ar?`${e.fr} · ${e.ar}`:e.fr||e.ar||``:``}export{t as i,n,r,e as t};

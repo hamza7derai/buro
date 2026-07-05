@@ -1,0 +1,1 @@
+function e(e,t=3){return e<=0?`out`:e<=t?`low`:`ok`}var t={ok:`En stock`,low:`Stock faible`,out:`Rupture de stock`},n={ok:`bg-success`,low:`bg-warn`,out:`bg-danger`},r={ok:`text-success`,low:`text-warn`,out:`text-danger`};export{e as i,t as n,r,n as t};
