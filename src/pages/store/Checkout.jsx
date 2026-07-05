@@ -11,9 +11,10 @@ import { db } from '../../firebase';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { formatPrice } from '../../lib/pricing';
 import { buildWhatsAppLink } from '../../lib/contact';
+import CachedImage from '../../components/CachedImage';
 
 const DELIVERY_FEE_HOME = 15;
-const STORE_MAP_URL = 'https://maps.app.goo.gl/U21xayi4JTgyreGU9?g_st=ac';
+const STORE_MAP_URL = 'https://maps.app.goo.gl/SHTiuNtk8TmxqNtu5';
 const STORE_FULL_ADDRESS = 'Magaz N°1, N°40, Quartier Industriel Syba, Marrakech';
 
 const STEP_CONFIG = [
@@ -616,7 +617,7 @@ function OrderSummary({ cartItems, subtotal, deliveryFee, discountAmount, total 
             <div className="relative shrink-0">
               <div className="w-10 h-10 rounded-lg bg-surface-1 border border-bord overflow-hidden flex items-center justify-center">
                 {item.image
-                  ? <img src={item.image} alt="" className="w-full h-full object-contain" />
+                  ? <CachedImage src={item.image} className="w-full h-full object-contain" />
                   : <Package size={16} className="text-txt-3" />
                 }
               </div>

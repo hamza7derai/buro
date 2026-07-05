@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useProducts } from '../hooks/useProducts';
@@ -23,6 +23,16 @@ const STOCK_FILTERS = [
 
 const PAGE_SIZE = 10;
 
+const ADMIN_PRODUCTS_STATE_KEY = 'younasser_admin_products_state';
+
+function readAdminProductsState() {
+  try {
+    const raw = sessionStorage.getItem(ADMIN_PRODUCTS_STATE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 function stockStatus(p) {
   const s = p.totalStock ?? 0;
@@ -69,16 +79,53 @@ export default function Products() {
   const { categories, mainCategories } = useCategories();
   const toast = useToast();
   const navigate = useNavigate();
+  const containerRef = useRef(null);
 
-  const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [brandFilter, setBrandFilter] = useState('');
-  const [stockFilter, setStockFilter] = useState('all');
+  const savedState = readAdminProductsState();
+  const [search, setSearch] = useState(() => savedState?.search || '');
+  const [categoryFilter, setCategoryFilter] = useState(() => savedState?.categoryFilter || '');
+  const [brandFilter, setBrandFilter] = useState(() => savedState?.brandFilter || '');
+  const [stockFilter, setStockFilter] = useState(() => savedState?.stockFilter || 'all');
   const [page, setPage] = useState(1);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
+  function snapshotState(scrollPosition) {
+    return {
+      search,
+      categoryFilter,
+      brandFilter,
+      stockFilter,
+      scrollPosition: scrollPosition ?? containerRef.current?.scrollTop ?? 0,
+    };
+  }
+
+  // Persist search/filters to sessionStorage as they change, so returning to this
+  // page (e.g. after saving an edited product) restores the same search/filtered view.
+  useEffect(() => {
+    sessionStorage.setItem(ADMIN_PRODUCTS_STATE_KEY, JSON.stringify(snapshotState()));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, categoryFilter, brandFilter, stockFilter]);
+
+  // Restore scroll position once the table has actually rendered.
+  const scrollRestoredRef = useRef(false);
+  useEffect(() => {
+    if (scrollRestoredRef.current || loading) return;
+    scrollRestoredRef.current = true;
+    const saved = readAdminProductsState();
+    if (saved?.scrollPosition && containerRef.current) {
+      requestAnimationFrame(() => { containerRef.current.scrollTop = saved.scrollPosition; });
+    }
+  }, [loading]);
+
   function handleDuplicate(product) {
     navigate('/admin/produits/nouveau', { state: { duplicateFrom: product } });
+  }
+
+  // Capture the exact scroll position right before leaving for the edit page,
+  // so saving the product and returning here restores the same spot.
+  function goToEdit(product) {
+    sessionStorage.setItem(ADMIN_PRODUCTS_STATE_KEY, JSON.stringify(snapshotState(containerRef.current?.scrollTop)));
+    navigate(`/admin/produits/${product.id}`);
   }
 
   async function handleDelete(product) {
@@ -126,7 +173,7 @@ export default function Products() {
   const horsStock = products.filter(p => stockStatus(p) === 'out').length;
 
   return (
-    <div className="h-full w-full overflow-y-auto bg-[#f5f6fa] p-5">
+    <div ref={containerRef} className="h-full w-full overflow-y-auto bg-[#f5f6fa] p-5">
       <div className="flex flex-col gap-4">
 
         {/* Header */}
@@ -280,7 +327,7 @@ export default function Products() {
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          <button onClick={() => navigate(`/admin/produits/${p.id}`)} className="px-2.5 py-1 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Modifier</button>
+                          <button onClick={() => goToEdit(p)} className="px-2.5 py-1 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Modifier</button>
                           <button onClick={() => handleDuplicate(p)} className="px-2.5 py-1 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Copier</button>
                           {isAdmin && (
                             <button onClick={() => setConfirmDelete(p)} className="px-2.5 py-1 rounded-md text-[11px] font-semibold text-[#ef4444] bg-[#ef4444]/10 hover:bg-[#ef4444]/20 transition-colors">Suppr.</button>

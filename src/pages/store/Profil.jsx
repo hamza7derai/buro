@@ -13,6 +13,7 @@ import { useToast } from '../../components/Toast';
 import { formatPrice } from '../../lib/pricing';
 import { ORDER_STATUS_META, ORDER_STATUS_FLOW } from '../../lib/orderStatus';
 import { buildWhatsAppLink } from '../../lib/contact';
+import CachedImage from '../../components/CachedImage';
 import ProductCard from '../../components/store/ProductCard';
 
 const PHONE_KEY = 'younasser_profile_phone';
@@ -303,7 +304,7 @@ export default function Profil() {
                             <div key={i} className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-lg bg-surface-1 border border-bord overflow-hidden shrink-0 flex items-center justify-center">
                                 {item.image
-                                  ? <img src={item.image} alt="" className="w-full h-full object-contain" />
+                                  ? <CachedImage src={item.image} className="w-full h-full object-contain" />
                                   : <Package size={14} className="text-txt-3" />
                                 }
                               </div>

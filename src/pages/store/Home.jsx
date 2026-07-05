@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ChevronRight, Search, Filter, ShieldCheck, Truck, BadgePercent, Headset } from 'lucide-react';
+import { ChevronRight, Search, Filter, ShieldCheck, Truck, BadgePercent, Headset, MessageCircle } from 'lucide-react';
 import { useProducts } from '../../hooks/useProducts';
 import { useCategories } from '../../hooks/useCategories';
 import ProductCard from '../../components/store/ProductCard';
@@ -28,9 +28,9 @@ export default function Home() {
       </div>
 
       {/* Desktop hero banner */}
-      <section className="hidden lg:block relative" style={{ minHeight: '230px' }}>
-        {/* Gradient background with dot pattern — clipped to rounded bounds */}
-        <div className="absolute inset-0 rounded-2xl overflow-hidden">
+      <section className="hidden lg:block relative rounded-2xl overflow-hidden" style={{ minHeight: '230px' }}>
+        {/* Gradient background with dot pattern */}
+        <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-[#eff6ff] to-[#dbeafe]" />
           <div className="absolute inset-0 opacity-25" style={{ backgroundImage: 'radial-gradient(circle, #93c5fd 1px, transparent 1px)', backgroundSize: '22px 22px' }} />
         </div>
@@ -38,52 +38,62 @@ export default function Home() {
         {/* Left text content */}
         <div className="relative z-10 px-8 py-7" style={{ maxWidth: 'calc(100% - 290px)' }}>
           {/* Pill tag */}
-          <span className="inline-block bg-blue/10 text-blue text-[11px] font-bold px-3 py-1 rounded-full mb-3 tracking-wide">
-            LA RENTRÉE EST LÀ !
+          <span className="inline-block bg-yellow-100 text-yellow-700 text-[11px] font-bold px-3 py-1 rounded-full mb-3 tracking-wide">
+            RENTRÉE SCOLAIRE 2026-2027
           </span>
 
           {/* Heading */}
           <h1 className="text-[27px] font-black text-navy leading-tight mb-3">
-            Tout pour le bureau<br />
-            <span className="text-blue relative inline-block">
-              et l'école
-              <span className="absolute left-0 -bottom-0.5 w-full h-[3px] bg-[#F5A623] rounded-full opacity-70" />
-            </span>
+            Votre liste scolaire,<br />
+            <span className="text-blue">on s'en occupe.</span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-navy/70 text-[13px] leading-relaxed mb-5 max-w-[260px]">
-            Fournitures, manuels, packs scolaires et accessoires livrés rapidement à Marrakech.
+          <p className="text-navy/70 text-[13px] leading-relaxed mb-5 max-w-[320px]">
+            Nous préparons les listes complètes pour plus de 20 écoles à Marrakech. Apportez votre liste en boutique ou commandez votre pack en ligne.
           </p>
 
-          {/* CTA button */}
-          <Link
-            to="/categories"
-            className="inline-flex items-center gap-1.5 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
-          >
-            Découvrir les catégories →
-          </Link>
+          {/* CTA buttons */}
+          <div className="flex items-center gap-3 mb-4">
+            <Link
+              to="/packs"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
+            >
+              Voir nos packs →
+            </Link>
+            <a
+              href="https://maps.app.goo.gl/SHTiuNtk8TmxqNtu5"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap bg-white text-navy text-[13px] font-semibold px-5 py-2.5 rounded-xl border border-navy/20 hover:bg-navy/5 transition-colors"
+            >
+              📍 Nous rendre visite
+            </a>
+          </div>
 
-          {/* Trust line */}
-          <div className="flex items-center gap-5 mt-4">
-            <span className="flex items-center gap-1.5 text-[11px] text-navy/60 font-medium">
-              <span className="text-[14px]">👥</span> +10 000 clients satisfaits
-            </span>
-            <span className="flex items-center gap-1.5 text-[11px] text-navy/60 font-medium">
-              <span className="text-[14px]">🔒</span> Paiement sécurisé
-            </span>
+          {/* Social icons */}
+          <div className="flex items-center gap-3">
+            <a href="https://instagram.com/younasser.ma" target="_blank" rel="noopener noreferrer" className="text-txt-3 hover:text-navy transition-colors" aria-label="Instagram">
+              <InstagramIcon size={20} />
+            </a>
+            <a href="https://tiktok.com/@younasser.ma" target="_blank" rel="noopener noreferrer" className="text-txt-3 hover:text-navy transition-colors" aria-label="TikTok">
+              <TikTokIcon size={20} />
+            </a>
+            <a href="https://www.facebook.com/younasser.ma" target="_blank" rel="noopener noreferrer" className="text-txt-3 hover:text-navy transition-colors" aria-label="Facebook">
+              <FacebookIcon size={20} />
+            </a>
+            <a href="https://wa.me/212706447525" target="_blank" rel="noopener noreferrer" className="text-txt-3 hover:text-navy transition-colors" aria-label="WhatsApp">
+              <MessageCircle size={20} />
+            </a>
           </div>
         </div>
 
-        {/* Right side: backpack image + floating decorations — overlaps bottom edge */}
-        <div className="absolute right-0 bottom-[-14px] w-[300px] h-[290px] pointer-events-none z-10">
-          <span className="absolute top-6 left-9 text-2xl select-none" style={{ transform: 'rotate(-20deg)' }}>✏️</span>
-          <span className="absolute top-1 right-[105px] text-lg select-none" style={{ transform: 'rotate(15deg)' }}>⭐</span>
-          <span className="absolute bottom-[85px] left-3 text-lg select-none" style={{ transform: 'rotate(10deg)' }}>📏</span>
+        {/* Right side: backpack image — contained within banner bounds */}
+        <div className="absolute right-0 bottom-0 w-[45%] h-full pointer-events-none z-10">
           <img
             src={import.meta.env.BASE_URL + 'images/hero-backpack.png'}
             alt=""
-            className="absolute right-3 bottom-0 h-[280px] object-contain drop-shadow-lg"
+            className="w-full h-full object-contain drop-shadow-lg"
           />
         </div>
       </section>
@@ -161,6 +171,30 @@ export default function Home() {
         </section>
       )}
     </div>
+  );
+}
+
+function InstagramIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.64.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.15-3.23 1.66-4.77 4.92-4.92 1.27-.06 1.65-.07 4.85-.07zM12 0C8.74 0 8.33.01 7.05.07 2.7.27.27 2.7.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.2 4.35 2.63 6.78 6.98 6.98 1.28.06 1.69.07 4.95.07s3.67-.01 4.95-.07c4.35-.2 6.78-2.63 6.98-6.98.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.2-4.35-2.63-6.78-6.98-6.98C15.67.01 15.26 0 12 0zm0 5.84A6.16 6.16 0 1 0 18.16 12 6.16 6.16 0 0 0 12 5.84zM12 16a4 4 0 1 1 4-4 4 4 0 0 1-4 4zm6.4-11.84a1.44 1.44 0 1 0 1.44 1.44 1.44 1.44 0 0 0-1.44-1.44z" />
+    </svg>
+  );
+}
+
+function TikTokIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 0 1 15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48z" />
+    </svg>
+  );
+}
+
+function FacebookIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M22 12a10 10 0 1 0-11.56 9.87v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.88h-2.34v6.99A10 10 0 0 0 22 12z" />
+    </svg>
   );
 }
 

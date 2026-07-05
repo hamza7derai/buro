@@ -9,6 +9,7 @@ import { getPrice, formatPrice } from '../../lib/pricing';
 import { MANUEL_NIVEAUX, MANUEL_CLASSES, MANUEL_MATIERES } from '../../lib/manuelLevels';
 import { buildWhatsAppLink } from '../../lib/contact';
 import { getStockState, STOCK_LABELS } from '../../lib/stock';
+import CachedImage from '../../components/CachedImage';
 
 const PAGE_SIZE = 12;
 
@@ -29,7 +30,7 @@ function ManuelCard({ product, layout, onAdd, onNotify }) {
   const cover = (
     <div className={`relative ${layout === 'row' ? 'w-16 h-20 rounded-lg bg-white overflow-hidden shrink-0 p-1' : 'aspect-square bg-white rounded-t-xl overflow-hidden'}`}>
       {product.mainImage
-        ? <img src={product.mainImage} alt="" loading="lazy" className="w-full h-full object-contain" />
+        ? <CachedImage src={product.mainImage} className="w-full h-full object-contain" />
         : <div className="w-full h-full flex items-center justify-center"><Package size={22} className="text-gray-400" /></div>}
       {layout !== 'row' && (
         <button

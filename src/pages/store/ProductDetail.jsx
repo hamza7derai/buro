@@ -11,6 +11,7 @@ import { getStockState, STOCK_LABELS, STOCK_DOT_CLASS, STOCK_TEXT_CLASS } from '
 import { resolveCategoryLabel } from '../../lib/categoryIcons';
 import { genreLabel } from '../../lib/bookMeta';
 import ProductCard from '../../components/store/ProductCard';
+import CachedImage from '../../components/CachedImage';
 
 export default function ProductDetail() {
   const { slug } = useParams();
@@ -18,7 +19,7 @@ export default function ProductDetail() {
   const toast = useToast();
   const { product, variants, loading, notFound } = useProduct(slug);
   const { products: allProducts, fetchVariants } = useProducts();
-  const { categories } = useCategories();
+  const { categories, subCategoriesOf } = useCategories();
   const { addToCart, cartCount } = useCart();
 
   const [selectedOptions, setSelectedOptions] = useState({});
@@ -61,6 +62,11 @@ export default function ProductDetail() {
 
   const categoryLabel = resolveCategoryLabel(categories, product.categoryPath?.[0]);
   const categoryObj = categories.find(c => c.id === product.categoryPath?.[0] || c.name === product.categoryPath?.[0]);
+  const subcategoryRaw = product.categoryPath?.[1] || product.subcategory || '';
+  const subDoc = categoryObj && subcategoryRaw
+    ? subCategoriesOf(categoryObj.id).find(s => s.id === subcategoryRaw || s.name === subcategoryRaw)
+    : null;
+  const subcategoryLabel = subDoc?.name || subcategoryRaw;
   const { price, oldPrice } = getPrice(product, selectedVariant);
   const discountPct = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
 
@@ -143,6 +149,12 @@ export default function ProductDetail() {
           <>
             <Link to={`/categories/${categoryObj.slug}`} className="hover:text-txt-1">{categoryLabel}</Link>
             <ChevronRight size={12} className="shrink-0" />
+            {subcategoryLabel && (
+              <>
+                <Link to={`/categories/${categoryObj.slug}?sub=${encodeURIComponent(subcategoryLabel)}`} className="hover:text-txt-1">{subcategoryLabel}</Link>
+                <ChevronRight size={12} className="shrink-0" />
+              </>
+            )}
           </>
         )}
         <span className="text-txt-1 font-medium truncate max-w-[240px]">{product.name}</span>
@@ -179,7 +191,7 @@ export default function ProductDetail() {
               {displayImages.length === 0 ? (
                 <div className="w-full h-full flex items-center justify-center shrink-0 snap-center"><Package size={48} className="text-gray-400" /></div>
               ) : displayImages.map((src, i) => (
-                <img key={i} src={src} alt="" loading="lazy" className="w-full h-full object-contain shrink-0 snap-center" />
+                <CachedImage key={i} src={src} className="w-full h-full object-contain shrink-0 snap-center" />
               ))}
             </div>
             {displayImages.length > 1 && (
@@ -195,7 +207,7 @@ export default function ProductDetail() {
           <div className="hidden lg:flex lg:flex-col lg:gap-3">
             <div className="aspect-square rounded-2xl bg-white border border-bord overflow-hidden flex items-center justify-center">
               {displayImages.length > 0 ? (
-                <img src={displayImages[activeImage] || displayImages[0]} alt="" className="w-full h-full object-contain" />
+                <CachedImage src={displayImages[activeImage] || displayImages[0]} className="w-full h-full object-contain" />
               ) : <Package size={64} className="text-gray-400" />}
             </div>
             {displayImages.length > 1 && (
@@ -206,7 +218,7 @@ export default function ProductDetail() {
                     onClick={() => setActiveImage(i)}
                     className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-colors shrink-0 bg-[#f0f0f0] ${i === activeImage ? 'border-blue' : 'border-bord'}`}
                   >
-                    <img src={src} alt="" loading="lazy" className="w-full h-full object-cover" />
+                    <CachedImage src={src} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -341,7 +353,7 @@ export default function ProductDetail() {
                       </span>
                     )}
                     <div className="aspect-square rounded-lg bg-[#f8f9fa] overflow-hidden flex items-center justify-center">
-                      {lotImage ? <img src={lotImage} alt="" loading="lazy" className="w-full h-full object-contain" /> : <Package size={28} className="text-gray-400" />}
+                      {lotImage ? <CachedImage src={lotImage} className="w-full h-full object-contain" /> : <Package size={28} className="text-gray-400" />}
                     </div>
                     <div className="flex flex-col gap-0.5">
                       <span className="text-[12px] font-semibold text-txt-1 line-clamp-2 leading-snug">{lot.name}</span>
@@ -434,7 +446,7 @@ export default function ProductDetail() {
                   {i > 0 && <Plus size={16} className="text-txt-3 shrink-0" />}
                   <div className="w-20 flex flex-col items-center gap-1.5 text-center">
                     <div className="w-16 h-16 rounded-xl bg-[#f0f0f0] border border-bord overflow-hidden flex items-center justify-center">
-                      {p.mainImage ? <img src={p.mainImage} alt="" loading="lazy" className="w-full h-full object-cover" /> : <Package size={20} className="text-gray-400" />}
+                      {p.mainImage ? <CachedImage src={p.mainImage} className="w-full h-full object-cover" /> : <Package size={20} className="text-gray-400" />}
                     </div>
                     <span className="text-[11px] text-txt-1 line-clamp-2 leading-tight">{p.name}</span>
                     <span className="text-[11px] font-mono font-semibold text-navy">{formatPrice(bundleItemPrice(p))}</span>

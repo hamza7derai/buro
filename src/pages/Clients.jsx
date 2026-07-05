@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useClients } from '../hooks/useClients';
 import { useToast } from '../components/Toast';
 import { Users, UserCheck, UserPlus, Wallet } from 'lucide-react';
@@ -6,6 +6,17 @@ import { formatPrice } from '../lib/pricing';
 
 const PAGE_SIZE = 10;
 const ACTIVE_WINDOW_DAYS = 90;
+
+const ADMIN_CLIENTS_STATE_KEY = 'younasser_admin_clients_state';
+
+function readAdminClientsState() {
+  try {
+    const raw = sessionStorage.getItem(ADMIN_CLIENTS_STATE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 
 function isActiveClient(client) {
@@ -38,11 +49,32 @@ function StatCard({ icon: Icon, label, value, iconWrapCls, iconCls }) {
 export default function Clients() {
   const { clients, loading, addClient, updateClient } = useClients();
   const toast = useToast();
+  const containerRef = useRef(null);
 
-  const [search, setSearch] = useState('');
+  const savedState = readAdminClientsState();
+  const [search, setSearch] = useState(() => savedState?.search || '');
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
+
+  // Persist the search query to sessionStorage so it survives a redirect back
+  // to this page (e.g. after editing a client), same as the products page.
+  useEffect(() => {
+    sessionStorage.setItem(ADMIN_CLIENTS_STATE_KEY, JSON.stringify({
+      search,
+      scrollPosition: containerRef.current?.scrollTop ?? 0,
+    }));
+  }, [search]);
+
+  const scrollRestoredRef = useRef(false);
+  useEffect(() => {
+    if (scrollRestoredRef.current || loading) return;
+    scrollRestoredRef.current = true;
+    const saved = readAdminClientsState();
+    if (saved?.scrollPosition && containerRef.current) {
+      requestAnimationFrame(() => { containerRef.current.scrollTop = saved.scrollPosition; });
+    }
+  }, [loading]);
 
   const [form, setForm] = useState({
     name: '', phone: '', ice: '', type: 'retail', address: '', notes: '',
@@ -117,7 +149,7 @@ export default function Clients() {
   const newThisMonth = clients.filter(isNewThisMonth).length;
 
   return (
-    <div className="h-full w-full overflow-y-auto bg-[#f5f6fa] p-5">
+    <div ref={containerRef} className="h-full w-full overflow-y-auto bg-[#f5f6fa] p-5">
       <div className="flex flex-col gap-4">
 
         {/* Header */}

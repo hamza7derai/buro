@@ -10,6 +10,7 @@ import { useProducts } from '../context/ProductsContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { formatPrice, getPrice } from '../lib/pricing';
 import { buildWhatsAppLink } from '../lib/contact';
+import CachedImage from './CachedImage';
 
 const NAV_LINKS = [
   { to: '/', icon: Home, label: 'Accueil', desktopLabel: 'Accueil', end: true },
@@ -167,7 +168,7 @@ export default function StoreLayout() {
                       >
                         <div className="w-10 h-10 rounded-lg bg-surface-2 border border-bord overflow-hidden shrink-0 flex items-center justify-center">
                           {p.mainImage
-                            ? <img src={p.mainImage} alt="" className="w-full h-full object-contain" />
+                            ? <CachedImage src={p.mainImage} className="w-full h-full object-contain" />
                             : <Package size={16} className="text-txt-3" />
                           }
                         </div>
@@ -237,6 +238,12 @@ export default function StoreLayout() {
               >
                 <Icon size={17} />
                 {desktopLabel}
+                {to === '/manuels' && (
+                  <span className="w-2 h-2 rounded-full bg-green-500 ml-1 flex-shrink-0" />
+                )}
+                {to === '/packs' && (
+                  <span className="w-2 h-2 rounded-full bg-red-500 ml-1 flex-shrink-0" />
+                )}
                 {to === '/profil' && favCount > 0 && (
                   <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full bg-blue/15 text-blue text-[10px] font-bold flex items-center justify-center">
                     {favCount}
@@ -276,7 +283,7 @@ export default function StoreLayout() {
                 {cartItems.map((item, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <div className="w-10 h-10 rounded-lg bg-surface-2 border border-bord overflow-hidden shrink-0">
-                      {item.image && <img src={item.image} alt="" className="w-full h-full object-cover" />}
+                      {item.image && <CachedImage src={item.image} className="w-full h-full object-cover" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[12px] text-txt-1 truncate">{item.name}</div>
@@ -330,7 +337,7 @@ export default function StoreLayout() {
 
             {/* Card 3 — Boutique location */}
             <a
-              href="https://maps.app.goo.gl/U21xayi4JTgyreGU9?g_st=ac"
+              href="https://maps.app.goo.gl/SHTiuNtk8TmxqNtu5"
               target="_blank"
               rel="noopener noreferrer"
               className="block bg-[#eaf1fe] rounded-2xl p-4 hover:bg-[#dbeafe] transition-colors"
@@ -383,7 +390,15 @@ export default function StoreLayout() {
                     </span>
                   )}
                 </div>
-                {label}
+                <span className="inline-flex items-center">
+                  {label}
+                  {to === '/manuels' && (
+                    <span className="w-2 h-2 rounded-full bg-green-500 ml-1 flex-shrink-0" />
+                  )}
+                  {to === '/packs' && (
+                    <span className="w-2 h-2 rounded-full bg-red-500 ml-1 flex-shrink-0" />
+                  )}
+                </span>
               </>
             )}
           </NavLink>

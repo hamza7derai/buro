@@ -9,6 +9,7 @@ import { Skeleton } from '../../components/Skeleton';
 import { formatPrice } from '../../lib/pricing';
 import { buildWhatsAppLink } from '../../lib/contact';
 import { MANUEL_NIVEAUX, MANUEL_CLASSES } from '../../lib/manuelLevels';
+import CachedImage from '../../components/CachedImage';
 
 const PAGE_SIZE = 8;
 
@@ -58,7 +59,7 @@ function PackCard({ pack }) {
 
       <div className="w-full aspect-[4/5] rounded-xl bg-white overflow-hidden mt-2 flex items-center justify-center p-4">
         {pack.mainImage ? (
-          <img src={pack.mainImage} alt={pack.name} loading="lazy" className="w-full h-full object-contain" />
+          <CachedImage src={pack.mainImage} alt={pack.name} className="w-full h-full object-contain" />
         ) : (
           <Package size={32} className="text-gray-400" />
         )}

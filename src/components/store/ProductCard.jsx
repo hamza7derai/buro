@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Heart, Plus, Package } from 'lucide-react';
+import CachedImage from '../CachedImage';
 import { useCart } from '../../context/CartContext';
 import { useFavorites } from '../../context/FavoritesContext';
 import { useCategories } from '../../hooks/useCategories';
@@ -41,7 +42,7 @@ export default function ProductCard({ product, className = '' }) {
     <div className={`relative bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col ${className}`}>
       <Link to={href} className="relative block aspect-square bg-white rounded-t-xl overflow-hidden">
         {product.mainImage ? (
-          <img src={product.mainImage} alt={product.name} loading="lazy" className="w-full h-full object-contain" />
+          <CachedImage src={product.mainImage} alt={product.name} className="w-full h-full object-contain" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <Package size={32} className="text-gray-400" />

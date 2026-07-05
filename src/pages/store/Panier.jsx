@@ -4,6 +4,7 @@ import { Minus, Plus, Trash2, ShoppingCart, Tag, X } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { formatPrice } from '../../lib/pricing';
 import { DELIVERY_FEE } from '../../lib/checkoutPricing';
+import CachedImage from '../../components/CachedImage';
 
 export default function Panier() {
   const {
@@ -46,7 +47,7 @@ export default function Panier() {
         {cartItems.map((item, i) => (
           <div key={i} className="flex items-center gap-3 bg-surface-1 border border-bord rounded-2xl p-3">
             <div className="w-16 h-16 rounded-xl bg-surface-2 border border-bord overflow-hidden shrink-0">
-              {item.image && <img src={item.image} alt="" className="w-full h-full object-cover" />}
+              {item.image && <CachedImage src={item.image} className="w-full h-full object-cover" />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-[13px] font-medium text-txt-1 truncate">{item.name}</div>

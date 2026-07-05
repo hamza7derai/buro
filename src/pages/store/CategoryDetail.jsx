@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { ChevronRight, ChevronLeft, X } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';
 import { useProducts } from '../../hooks/useProducts';
-import BrandDropdown from '../../components/BrandDropdown';
 import ProductCard from '../../components/store/ProductCard';
 import { ProductCardSkeleton } from '../../components/Skeleton';
 import { getPrice } from '../../lib/pricing';
@@ -18,24 +17,40 @@ function subcategoryRaw(p) {
   return p.categoryPath?.[1] || p.subcategory || '';
 }
 
+function catFiltersKey(slug) {
+  return `younasser_cat_filters_${slug}`;
+}
+
+function readSavedCatFilters(slug) {
+  try {
+    const raw = sessionStorage.getItem(catFiltersKey(slug));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function CategoryDetail() {
   const { slug } = useParams();
   const { mainCategories, subCategoriesOf, loading: catLoading } = useCategories();
   const { products, loading } = useProducts();
+  const [searchParams] = useSearchParams();
 
-  const [subcat, setSubcat] = useState('');
-  const [selectedTags, setSelectedTags] = useState([]);
+  const savedFilters = readSavedCatFilters(slug);
+
+  const [subcat, setSubcat] = useState(() => savedFilters?.subcategory || '');
+  const [selectedTags, setSelectedTags] = useState(() => savedFilters?.tags || []);
   // standard filters
-  const [brand, setBrand] = useState('');
-  const [stock, setStock] = useState('');
+  const [brand, setBrand] = useState(() => savedFilters?.brand || '');
+  const [stock, setStock] = useState(() => savedFilters?.stock || '');
   // shared filters
-  const [priceRange, setPriceRange] = useState('');
-  const [sort, setSort] = useState('pertinence');
+  const [priceRange, setPriceRange] = useState(() => savedFilters?.priceRange || '');
+  const [sort, setSort] = useState(() => savedFilters?.sort || 'pertinence');
   // book-specific filters
-  const [bookAuthor, setBookAuthor] = useState('');
-  const [bookPublisher, setBookPublisher] = useState('');
-  const [bookGenre, setBookGenre] = useState('');
-  const [bookLanguage, setBookLanguage] = useState('');
+  const [bookAuthor, setBookAuthor] = useState(() => savedFilters?.bookAuthor || '');
+  const [bookPublisher, setBookPublisher] = useState(() => savedFilters?.bookPublisher || '');
+  const [bookGenre, setBookGenre] = useState(() => savedFilters?.bookGenre || '');
+  const [bookLanguage, setBookLanguage] = useState(() => savedFilters?.bookLanguage || '');
 
   const [page, setPage] = useState(1);
 
@@ -67,6 +82,9 @@ export default function CategoryDetail() {
 
   // Items after subcategory filter — used to compute available refinements
   const subcatItems = baseItems.filter(matchesSubcat);
+
+  // Brands available within the current subcategory only (re-populates when subcat changes)
+  const uniqueBrands = [...new Set(subcatItems.map(p => p.brand).filter(Boolean))].sort();
 
   // Book option lists — unique values from subcategory-filtered items
   const uniqueAuthors = [...new Set(subcatItems.map(p => p.bookInfo?.author).filter(Boolean))].sort();
@@ -125,7 +143,13 @@ export default function CategoryDetail() {
   else if (sort === 'desc') sorted.sort((a, b) => getPrice(b).price - getPrice(a).price);
   else if (sort === 'new') sorted.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
 
+  // Compares against the previous subcat value (rather than a "did mount" boolean
+  // flag) so this stays correct under React StrictMode's dev-only double-invoking
+  // of mount effects — a flag-based guard would wrongly fire on the replay.
+  const prevSubcatRef = useRef(subcat);
   useEffect(() => {
+    if (prevSubcatRef.current === subcat) return;
+    prevSubcatRef.current = subcat;
     setBrand(''); setBookAuthor(''); setBookPublisher(''); setBookGenre(''); setBookLanguage('');
     setSelectedTags([]);
   }, [subcat]);
@@ -134,12 +158,85 @@ export default function CategoryDetail() {
     setPage(1);
   }, [slug, subcat, selectedTags, brand, priceRange, stock, sort, bookAuthor, bookPublisher, bookGenre, bookLanguage]);
 
-  // Reset all filters when slug changes
+  // Persist the current filters (and scroll position) to sessionStorage on every
+  // change, keyed per category, so a later mount of this page (e.g. via the
+  // browser back button from a product page) can restore the same view.
+  function snapshotFilters(scrollPosition) {
+    return {
+      subcategory: subcat,
+      tags: selectedTags,
+      brand,
+      stock,
+      priceRange,
+      sort,
+      bookAuthor,
+      bookPublisher,
+      bookGenre,
+      bookLanguage,
+      scrollPosition: scrollPosition ?? window.scrollY,
+    };
+  }
+
   useEffect(() => {
-    setSubcat(''); setSelectedTags([]);
-    setBrand(''); setStock(''); setPriceRange(''); setSort('pertinence');
-    setBookAuthor(''); setBookPublisher(''); setBookGenre(''); setBookLanguage('');
+    sessionStorage.setItem(catFiltersKey(slug), JSON.stringify(snapshotFilters()));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, subcat, selectedTags, brand, stock, priceRange, sort, bookAuthor, bookPublisher, bookGenre, bookLanguage]);
+
+  // Navigating to a different category (not just a different subcategory pill)
+  // clears that previous category's saved filters and loads whatever was saved
+  // for the newly-entered category, if any.
+  const prevSlugRef = useRef(slug);
+  useEffect(() => {
+    if (prevSlugRef.current === slug) return;
+    sessionStorage.removeItem(catFiltersKey(prevSlugRef.current));
+    prevSlugRef.current = slug;
+    const saved = readSavedCatFilters(slug);
+    setSubcat(saved?.subcategory || '');
+    setSelectedTags(saved?.tags || []);
+    setBrand(saved?.brand || '');
+    setStock(saved?.stock || '');
+    setPriceRange(saved?.priceRange || '');
+    setSort(saved?.sort || 'pertinence');
+    setBookAuthor(saved?.bookAuthor || '');
+    setBookPublisher(saved?.bookPublisher || '');
+    setBookGenre(saved?.bookGenre || '');
+    setBookLanguage(saved?.bookLanguage || '');
   }, [slug]);
+
+  // A breadcrumb link from the product page (e.g. /categories/fournitures-scolaires?sub=Cahiers)
+  // carries the subcategory name in the URL — resolve it to the internal subcat
+  // value once categories have loaded, overriding whatever was restored above.
+  const appliedSubParamRef = useRef(false);
+  useEffect(() => {
+    if (appliedSubParamRef.current || catLoading) return;
+    appliedSubParamRef.current = true;
+    const subParam = searchParams.get('sub');
+    if (!subParam) return;
+    if (subcategoryDocs.length > 0) {
+      const match = subcategoryDocs.find(s => s.id === subParam || s.name === subParam);
+      if (match) setSubcat(match.id);
+    } else if (fallbackSubNames.includes(subParam)) {
+      setSubcat(subParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [catLoading]);
+
+  // Restore scroll position once the product grid has actually rendered.
+  const scrollRestoredRef = useRef(false);
+  useEffect(() => {
+    if (scrollRestoredRef.current || loading || catLoading) return;
+    scrollRestoredRef.current = true;
+    const saved = readSavedCatFilters(slug);
+    if (saved?.scrollPosition) {
+      requestAnimationFrame(() => window.scrollTo(0, saved.scrollPosition));
+    }
+  }, [loading, catLoading, slug]);
+
+  // Capture the exact scroll position right before the user leaves for a
+  // product page, so the back button lands in the same spot.
+  function handleProductGridClick() {
+    sessionStorage.setItem(catFiltersKey(slug), JSON.stringify(snapshotFilters(window.scrollY)));
+  }
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const paged = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -147,6 +244,10 @@ export default function CategoryDetail() {
   const hasActiveFilters = isBookCategory
     ? Boolean(subcat || selectedTags.length || bookAuthor || bookPublisher || bookGenre || bookLanguage || priceRange)
     : Boolean(subcat || selectedTags.length || brand || priceRange || stock);
+
+  function toggleTag(tag) {
+    setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  }
 
   function resetFilters() {
     setSubcat(''); setSelectedTags([]);
@@ -215,43 +316,9 @@ export default function CategoryDetail() {
             </div>
           )}
 
-          {/* Tag pills */}
-          {availableTags.length > 0 && (
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              <span className="text-[11px] text-txt-3 shrink-0 font-semibold uppercase tracking-wide">Tags</span>
-              {availableTags.map(tag => {
-                const active = selectedTags.includes(tag);
-                return (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => setSelectedTags(prev =>
-                      active ? prev.filter(t => t !== tag) : [...prev, tag]
-                    )}
-                    className={`shrink-0 whitespace-nowrap text-[11px] font-medium rounded-full px-3 py-1 transition-colors border ${
-                      active
-                        ? 'bg-blue text-white border-blue'
-                        : 'bg-transparent border-bord text-txt-2 hover:border-blue hover:text-blue'
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                );
-              })}
-              {selectedTags.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedTags([])}
-                  className="text-[11px] text-txt-3 hover:text-txt-1 shrink-0 pl-1"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          )}
-
           {/* Filter bar — book-specific or standard */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 flex-wrap">
+          <div className="flex items-center gap-2 pb-1 flex-wrap">
+            <TagsFilterDropdown availableTags={availableTags} selectedTags={selectedTags} onToggle={toggleTag} />
             {isBookCategory ? (
               <>
                 <select value={bookAuthor} onChange={e => setBookAuthor(e.target.value)} className={selectCls}>
@@ -275,7 +342,10 @@ export default function CategoryDetail() {
               </>
             ) : (
               <>
-                <BrandDropdown mode="select" value={brand} onChange={setBrand} className={selectCls} emptyOptionLabel="Marque" />
+                <select value={brand} onChange={e => setBrand(e.target.value)} className={selectCls}>
+                  <option value="">Marque</option>
+                  {uniqueBrands.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
                 <select value={stock} onChange={e => setStock(e.target.value)} className={selectCls}>
                   <option value="">Stock</option>
                   <option value="in">En stock</option>
@@ -303,6 +373,24 @@ export default function CategoryDetail() {
             )}
           </div>
 
+          {/* Selected tags — removable chips */}
+          {selectedTags.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {selectedTags.map(tag => (
+                <span key={tag} className="inline-flex items-center gap-1 bg-blue-light text-blue text-[11px] font-medium rounded-full pl-3 pr-1.5 py-1">
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => toggleTag(tag)}
+                    className="w-4 h-4 rounded-full hover:bg-blue/20 flex items-center justify-center"
+                  >
+                    <X size={10} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
           {loading || catLoading ? (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
               {Array.from({ length: PAGE_SIZE }).map((_, i) => <ProductCardSkeleton key={i} />)}
@@ -311,7 +399,7 @@ export default function CategoryDetail() {
             <p className="text-[13px] text-txt-3">Aucun produit ne correspond à ces filtres.</p>
           ) : (
             <>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5" onClick={handleProductGridClick}>
                 {paged.map(p => <ProductCard key={p.id} product={p} />)}
               </div>
 
@@ -339,6 +427,45 @@ export default function CategoryDetail() {
             </>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+function TagsFilterDropdown({ availableTags, selectedTags, onToggle }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
+  if (availableTags.length === 0) return null;
+
+  return (
+    <div className="relative shrink-0" ref={ref}>
+      <button type="button" onClick={() => setOpen(o => !o)} className={selectCls}>
+        Tags{selectedTags.length > 0 ? ` (${selectedTags.length})` : ''}
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 bg-surface-1 border border-bord rounded-xl shadow-xl z-20 max-h-64 overflow-y-auto min-w-[180px] p-2">
+          {availableTags.map(tag => (
+            <label key={tag} className="flex items-center gap-2 px-2 py-1.5 text-[12px] text-txt-1 hover:bg-surface-2 rounded-lg cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedTags.includes(tag)}
+                onChange={() => onToggle(tag)}
+                className="accent-blue"
+              />
+              {tag}
+            </label>
+          ))}
+        </div>
       )}
     </div>
   );

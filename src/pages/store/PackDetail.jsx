@@ -9,6 +9,7 @@ import { useCart } from '../../context/CartContext';
 import { useToast } from '../../components/Toast';
 import { formatPrice } from '../../lib/pricing';
 import ProductCard from '../../components/store/ProductCard';
+import CachedImage from '../../components/CachedImage';
 
 function usePackDetail(slugOrId) {
   const [pack, setPack] = useState(null);
@@ -163,7 +164,7 @@ export default function PackDetail() {
       <div className="px-4 lg:px-0 lg:grid lg:grid-cols-2 lg:gap-10">
         <div className="aspect-[4/3] lg:aspect-square rounded-2xl bg-surface-2 border border-bord overflow-hidden flex items-center justify-center">
           {pack.mainImage ? (
-            <img src={pack.mainImage} alt={pack.name} className="w-full h-full object-cover" />
+            <CachedImage src={pack.mainImage} alt={pack.name} className="w-full h-full object-cover" />
           ) : <span className="text-6xl">🎁</span>}
         </div>
 
@@ -210,7 +211,7 @@ export default function PackDetail() {
                       ) : null}
                     </span>
                     <div className="w-12 h-12 rounded-xl bg-surface-2 border border-bord overflow-hidden shrink-0">
-                      {item.image && <img src={item.image} alt="" className="w-full h-full object-cover" />}
+                      {item.image && <CachedImage src={item.image} className="w-full h-full object-cover" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[13px] font-medium text-txt-1 truncate">{item.name}</div>
