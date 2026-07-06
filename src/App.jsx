@@ -32,6 +32,7 @@ const StorePackDetail = lazy(() => import('./pages/store/PackDetail'));
 const StorePanier = lazy(() => import('./pages/store/Panier'));
 const StoreCheckout = lazy(() => import('./pages/store/Checkout'));
 const StoreProfil = lazy(() => import('./pages/store/Profil'));
+const StoreNotFound = lazy(() => import('./pages/store/NotFound'));
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -97,6 +98,7 @@ export default function App() {
             <Route path="achats/nouveau" element={<PurchaseOrderForm />} />
             <Route path="achats/:id" element={<PurchaseOrderForm />} />
             <Route path="analytics" element={<Analytics />} />
+            <Route path="*" element={<Navigate to="/admin" replace />} />
           </Route>
           <Route path="/" element={<StoreLayout />}>
             <Route index element={<StoreHome />} />
@@ -110,8 +112,8 @@ export default function App() {
             <Route path="panier" element={<StorePanier />} />
             <Route path="checkout" element={<StoreCheckout />} />
             <Route path="profil" element={<StoreProfil />} />
+            <Route path="*" element={<StoreNotFound />} />
           </Route>
-          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Suspense>
     </>

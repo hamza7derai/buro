@@ -1,5 +1,6 @@
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Plus, Package } from 'lucide-react';
+import { Heart, Plus, Check, Package } from 'lucide-react';
 import CachedImage from '../CachedImage';
 import { useCart } from '../../context/CartContext';
 import { useFavorites } from '../../context/FavoritesContext';
@@ -14,6 +15,16 @@ export default function ProductCard({ product, className = '', style }) {
   const { getCategoryName } = useCategories();
   const toast = useToast();
   const fav = isFavorite(product.id);
+  const [heartPop, setHeartPop] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
+  const [addFlash, setAddFlash] = useState(false);
+  const addedTimerRef = useRef(null);
+  const flashTimerRef = useRef(null);
+
+  useEffect(() => () => {
+    clearTimeout(addedTimerRef.current);
+    clearTimeout(flashTimerRef.current);
+  }, []);
   const { price, oldPrice } = getPrice(product);
   const stock = product.totalStock ?? 0;
   const lowStockThreshold = product.lowStockThreshold ?? 3;
@@ -36,10 +47,22 @@ export default function ProductCard({ product, className = '', style }) {
     e.preventDefault();
     const nowFav = toggleFavorite(product.id);
     toast(nowFav ? 'Ajouté aux favoris' : 'Retiré des favoris', 'info');
+    setHeartPop(true);
+    setTimeout(() => setHeartPop(false), 200);
+  }
+
+  function handleAddToCart() {
+    addToCart(product, null, 1);
+    clearTimeout(addedTimerRef.current);
+    clearTimeout(flashTimerRef.current);
+    setJustAdded(true);
+    setAddFlash(true);
+    flashTimerRef.current = setTimeout(() => setAddFlash(false), 300);
+    addedTimerRef.current = setTimeout(() => setJustAdded(false), 500);
   }
 
   return (
-    <div className={`relative bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col ${className}`} style={style}>
+    <div className={`relative bg-white rounded-xl shadow-sm overflow-hidden flex flex-col transition-all duration-200 lg:hover:-translate-y-1 lg:hover:shadow-lg ${className}`} style={style}>
       <Link to={href} className="relative block aspect-square bg-white rounded-t-xl overflow-hidden">
         {product.mainImage ? (
           <CachedImage src={product.mainImage} alt={product.name} className="w-full h-full object-contain" />
@@ -58,7 +81,12 @@ export default function ProductCard({ product, className = '', style }) {
           onClick={handleFavorite}
           className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow"
         >
-          <Heart size={14} className={fav ? 'fill-danger text-danger' : 'text-txt-3'} />
+          <Heart
+            size={14}
+            className={`transition-transform duration-200 ${fav ? 'fill-danger text-danger' : 'text-txt-3'} ${
+              heartPop ? (fav ? 'scale-[1.3]' : 'scale-[0.8]') : 'scale-100'
+            }`}
+          />
         </button>
       </Link>
       <div className="px-3 pt-2 pb-3 flex flex-col gap-1 flex-1">
@@ -90,10 +118,12 @@ export default function ProductCard({ product, className = '', style }) {
           <button
             type="button"
             disabled={!inStock}
-            onClick={() => addToCart(product, null, 1)}
-            className="w-8 h-8 rounded-full bg-blue text-white flex items-center justify-center shrink-0 disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-95 transition-all"
+            onClick={handleAddToCart}
+            className={`w-8 h-8 rounded-full text-white flex items-center justify-center shrink-0 disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-all duration-200 ${
+              addFlash ? 'scale-95 bg-success' : 'scale-100 bg-blue'
+            }`}
           >
-            <Plus size={16} />
+            {justAdded ? <Check size={16} /> : <Plus size={16} />}
           </button>
         </div>
       </div>
