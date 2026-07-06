@@ -15,6 +15,7 @@ import { ORDER_STATUS_META, ORDER_STATUS_FLOW } from '../../lib/orderStatus';
 import { buildWhatsAppLink } from '../../lib/contact';
 import CachedImage from '../../components/CachedImage';
 import ProductCard from '../../components/store/ProductCard';
+import PageTransition from '../../components/PageTransition';
 
 const PHONE_KEY = 'younasser_profile_phone';
 const profileKey = phone => `younasser_profile_${phone}`;
@@ -137,7 +138,7 @@ export default function Profil() {
   // ── Landing state ────────────────────────────────────────────────────────
   if (!phone) {
     return (
-      <div className="flex flex-col items-center gap-6 px-4 py-10">
+      <PageTransition className="flex flex-col items-center gap-6 px-4 py-10">
         <div className="text-center">
           <h1 className="text-xl font-bold text-navy">Mon espace</h1>
           <p className="text-[13px] text-txt-2 mt-1">Suivez vos commandes et gérez vos informations.</p>
@@ -181,7 +182,7 @@ export default function Profil() {
             Nous utilisons votre numéro pour retrouver vos commandes. Aucun compte à créer.
           </p>
         </div>
-      </div>
+      </PageTransition>
     );
   }
 
@@ -190,7 +191,7 @@ export default function Profil() {
   const favProducts = products.filter(p => favorites.includes(p.id) && p.isVisible !== false);
 
   return (
-    <div className="flex flex-col gap-5 px-4 lg:px-0 py-4">
+    <PageTransition className="flex flex-col gap-5 px-4 lg:px-0 py-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -457,7 +458,7 @@ export default function Profil() {
           </button>
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }
 

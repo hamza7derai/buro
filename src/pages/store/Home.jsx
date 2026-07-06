@@ -2,13 +2,18 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, Search, Filter, ShieldCheck, Truck, BadgePercent, Headset, MessageCircle } from 'lucide-react';
 import { useProducts } from '../../hooks/useProducts';
 import { useCategories } from '../../hooks/useCategories';
+import { useRecentlyViewed } from '../../hooks/useRecentlyViewed';
+import { useMinLoadingTime } from '../../hooks/useMinLoadingTime';
 import ProductCard from '../../components/store/ProductCard';
-import { ProductCardSkeleton } from '../../components/Skeleton';
+import { SkeletonRow, StaggeredFadeIn } from '../../components/SkeletonCard';
+import PageTransition from '../../components/PageTransition';
 import { getCategoryIcon, DEFAULT_CATEGORIES } from '../../lib/categoryIcons';
 
 export default function Home() {
   const { products, loading } = useProducts();
   const { mainCategories } = useCategories();
+  const { recentlyViewedIds } = useRecentlyViewed();
+  const showSkeleton = useMinLoadingTime(loading);
 
   const visibleProducts = products.filter(p => p.isVisible !== false && !p.isManuel);
   const featured = visibleProducts.filter(p => p.isFeatured);
@@ -17,9 +22,12 @@ export default function Home() {
   ).slice(0, 8);
   const promoProducts = visibleProducts.filter(p => p.promo?.enabled).slice(0, 6);
   const categories = mainCategories.length > 0 ? mainCategories : DEFAULT_CATEGORIES;
+  const recentlyViewed = recentlyViewedIds
+    .map(id => products.find(p => p.id === id))
+    .filter(p => p && p.isVisible !== false);
 
   return (
-    <div className="flex flex-col gap-7 px-4 lg:px-0 py-4">
+    <PageTransition className="flex flex-col gap-7 px-4 lg:px-0 py-4">
       {/* Mobile search */}
       <div className="lg:hidden flex items-center gap-2 bg-surface-1 border border-bord rounded-full px-4 py-2.5">
         <Search size={16} className="text-txt-3 shrink-0" />
@@ -125,7 +133,7 @@ export default function Home() {
                 className="flex flex-col items-center justify-center gap-1.5 shrink-0 w-[120px] lg:w-auto bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-2.5"
               >
                 {image ? <img src={import.meta.env.BASE_URL + image} alt="" className="w-16 h-16 object-contain" /> : <Icon size={32} style={{ color }} />}
-                <span className="text-[11px] font-bold text-txt-1 text-center leading-tight">{cat.name}</span>
+                <span className="text-[11px] font-bold text-txt-1 text-center leading-tight max-w-[90px]">{cat.name}</span>
               </Link>
             );
           })}
@@ -140,18 +148,31 @@ export default function Home() {
             Voir tout <ChevronRight size={14} />
           </Link>
         </div>
-        {loading ? (
-          <div className="flex gap-3 overflow-x-auto pb-1 lg:grid lg:grid-cols-4 lg:gap-5 lg:overflow-visible">
-            {Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} className="w-[180px] shrink-0 lg:w-full" />)}
-          </div>
+        {showSkeleton ? (
+          <SkeletonRow />
         ) : bestSellers.length === 0 ? (
           <p className="text-[13px] text-txt-3">Aucun produit pour le moment.</p>
         ) : (
-          <div className="flex gap-3 overflow-x-auto pb-1 lg:grid lg:grid-cols-4 lg:gap-5 lg:overflow-visible">
+          <StaggeredFadeIn className="flex gap-3 overflow-x-auto pb-1 lg:grid lg:grid-cols-4 lg:gap-5 lg:overflow-visible">
             {bestSellers.map(p => <ProductCard key={p.id} product={p} className="w-[180px] shrink-0 lg:w-full" />)}
-          </div>
+          </StaggeredFadeIn>
         )}
       </section>
+
+      {/* Récemment consultés */}
+      {recentlyViewed.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-[15px] font-bold text-txt-1">Récemment consultés</h2>
+            <Link to="/recemment-consultes" className="text-[12px] text-blue flex items-center gap-0.5">
+              Voir tout <ChevronRight size={14} />
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-1 lg:grid lg:grid-cols-4 lg:gap-5 lg:overflow-visible">
+            {recentlyViewed.map(p => <ProductCard key={p.id} product={p} className="w-[180px] shrink-0 lg:w-full" />)}
+          </div>
+        </section>
+      )}
 
       {/* Trust badges */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -170,7 +191,7 @@ export default function Home() {
           </div>
         </section>
       )}
-    </div>
+    </PageTransition>
   );
 }
 

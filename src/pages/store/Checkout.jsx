@@ -12,6 +12,7 @@ import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { formatPrice } from '../../lib/pricing';
 import { buildWhatsAppLink } from '../../lib/contact';
 import CachedImage from '../../components/CachedImage';
+import PageTransition from '../../components/PageTransition';
 
 const DELIVERY_FEE_HOME = 15;
 const STORE_MAP_URL = 'https://maps.app.goo.gl/SHTiuNtk8TmxqNtu5';
@@ -179,14 +180,14 @@ export default function Checkout() {
 
   if (cartItems.length === 0 && step !== 'success') {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 px-4 py-24 text-center">
+      <PageTransition className="flex flex-col items-center justify-center gap-3 px-4 py-24 text-center">
         <ShoppingBag size={40} className="text-txt-3" />
         <h1 className="text-lg font-bold text-txt-1">Votre panier est vide</h1>
         <p className="text-[13px] text-txt-2 max-w-xs">Ajoutez des articles avant de passer commande.</p>
         <Link to="/" className="mt-2 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
           Voir nos produits
         </Link>
-      </div>
+      </PageTransition>
     );
   }
 
@@ -194,7 +195,7 @@ export default function Checkout() {
 
   if (step === 'success' && order) {
     return (
-      <div className="flex flex-col items-center text-center gap-6 px-4 py-16 max-w-sm mx-auto">
+      <PageTransition className="flex flex-col items-center text-center gap-6 px-4 py-16 max-w-sm mx-auto">
         <span className="w-24 h-24 rounded-full bg-success/10 flex items-center justify-center">
           <CheckCircle2 size={48} className="text-success" />
         </span>
@@ -233,14 +234,14 @@ export default function Checkout() {
         >
           <MessageCircle size={15} /> Une question ? Contactez-nous sur WhatsApp
         </a>
-      </div>
+      </PageTransition>
     );
   }
 
   // ── Steps ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col gap-6 px-4 lg:px-0 py-4 max-w-2xl lg:max-w-none lg:mx-auto">
+    <PageTransition className="flex flex-col gap-6 px-4 lg:px-0 py-4 max-w-2xl lg:max-w-none lg:mx-auto">
 
       <StepBar step={step} />
 
@@ -520,7 +521,7 @@ export default function Checkout() {
           </button>
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }
 

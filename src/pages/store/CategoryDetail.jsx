@@ -1,17 +1,37 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { ChevronRight, ChevronLeft, X } from 'lucide-react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';
 import { useProducts } from '../../hooks/useProducts';
 import ProductCard from '../../components/store/ProductCard';
-import { ProductCardSkeleton } from '../../components/Skeleton';
-import { getPrice } from '../../lib/pricing';
+import { SkeletonRow, StaggeredFadeIn } from '../../components/SkeletonCard';
+import { useMinLoadingTime } from '../../hooks/useMinLoadingTime';
+import PageTransition from '../../components/PageTransition';
+import FilterPanel, { FilterSection, FilterTriggerButton, FilterChip } from '../../components/store/FilterPanel';
+import { getPrice, isPromoActive } from '../../lib/pricing';
+import { getStockState, STOCK_LABELS } from '../../lib/stock';
 import { getCategoryVisual, DEFAULT_CATEGORIES } from '../../lib/categoryIcons';
 import { BOOK_LANGUAGES, isBookCategoryName, genreKey } from '../../lib/bookMeta';
 
 const PAGE_SIZE = 12;
 
 const selectCls = 'bg-surface-1 border border-bord rounded-xl px-3 py-2 text-[12px] text-txt-1 shrink-0 outline-none';
+
+const PRICE_RANGE_LABELS = {
+  lt10: 'Moins de 10 DH',
+  '10-50': '10-50 DH',
+  '50-100': '50-100 DH',
+  gt100: 'Plus de 100 DH',
+};
+
+const AVAILABILITY_ORDER = ['ok', 'low', 'out'];
+
+const pillBase = 'shrink-0 whitespace-nowrap text-[12px] font-medium rounded-full transition-colors';
+function pillCls(active) {
+  return active
+    ? `${pillBase} bg-blue text-white shadow-sm px-4 py-2`
+    : `${pillBase} bg-[#f1f5f9] text-txt-1 hover:bg-[#e2e8f0] px-3.5 py-1.5`;
+}
 
 function subcategoryRaw(p) {
   return p.categoryPath?.[1] || p.subcategory || '';
@@ -35,14 +55,16 @@ export default function CategoryDetail() {
   const { mainCategories, subCategoriesOf, loading: catLoading } = useCategories();
   const { products, loading } = useProducts();
   const [searchParams] = useSearchParams();
+  const showSkeleton = useMinLoadingTime(loading || catLoading);
 
   const savedFilters = readSavedCatFilters(slug);
 
   const [subcat, setSubcat] = useState(() => savedFilters?.subcategory || '');
   const [selectedTags, setSelectedTags] = useState(() => savedFilters?.tags || []);
   // standard filters
-  const [brand, setBrand] = useState(() => savedFilters?.brand || '');
-  const [stock, setStock] = useState(() => savedFilters?.stock || '');
+  const [brands, setBrands] = useState(() => savedFilters?.brands || []);
+  const [availability, setAvailability] = useState(() => savedFilters?.availability || []);
+  const [promoOnly, setPromoOnly] = useState(() => savedFilters?.promoOnly || false);
   // shared filters
   const [priceRange, setPriceRange] = useState(() => savedFilters?.priceRange || '');
   const [sort, setSort] = useState(() => savedFilters?.sort || 'pertinence');
@@ -53,6 +75,26 @@ export default function CategoryDetail() {
   const [bookLanguage, setBookLanguage] = useState(() => savedFilters?.bookLanguage || '');
 
   const [page, setPage] = useState(1);
+  const [panelOpen, setPanelOpen] = useState(false);
+
+  // Subcategory pills scroll-fade indicators
+  const pillsRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  function updatePillsFade() {
+    const el = pillsRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }
+  useEffect(() => {
+    updatePillsFade();
+    const el = pillsRef.current;
+    if (!el) return;
+    const onResize = () => updatePillsFade();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  });
 
   const categories = mainCategories.length > 0 ? mainCategories : DEFAULT_CATEGORIES;
   const category = categories.find(c => c.slug === slug);
@@ -123,10 +165,12 @@ export default function CategoryDetail() {
       }
       if (bookLanguage && p.bookInfo?.language !== bookLanguage) return false;
     } else {
-      if (brand && p.brand !== brand) return false;
-      const inStock = !p.isOutOfStock && (p.totalStock ?? 0) > 0;
-      if (stock === 'in' && !inStock) return false;
-      if (stock === 'out' && inStock) return false;
+      if (brands.length > 0 && !brands.includes(p.brand)) return false;
+      if (availability.length > 0) {
+        const state = getStockState(p.totalStock ?? 0, p.lowStockThreshold ?? 3);
+        if (!availability.includes(state)) return false;
+      }
+      if (promoOnly && !isPromoActive(p.promo)) return false;
     }
     if (priceRange) {
       const { price } = getPrice(p);
@@ -150,13 +194,14 @@ export default function CategoryDetail() {
   useEffect(() => {
     if (prevSubcatRef.current === subcat) return;
     prevSubcatRef.current = subcat;
-    setBrand(''); setBookAuthor(''); setBookPublisher(''); setBookGenre(''); setBookLanguage('');
+    setBrands([]); setAvailability([]); setPromoOnly(false);
+    setBookAuthor(''); setBookPublisher(''); setBookGenre(''); setBookLanguage('');
     setSelectedTags([]);
   }, [subcat]);
 
   useEffect(() => {
     setPage(1);
-  }, [slug, subcat, selectedTags, brand, priceRange, stock, sort, bookAuthor, bookPublisher, bookGenre, bookLanguage]);
+  }, [slug, subcat, selectedTags, brands, priceRange, availability, promoOnly, sort, bookAuthor, bookPublisher, bookGenre, bookLanguage]);
 
   // Persist the current filters (and scroll position) to sessionStorage on every
   // change, keyed per category, so a later mount of this page (e.g. via the
@@ -165,8 +210,9 @@ export default function CategoryDetail() {
     return {
       subcategory: subcat,
       tags: selectedTags,
-      brand,
-      stock,
+      brands,
+      availability,
+      promoOnly,
       priceRange,
       sort,
       bookAuthor,
@@ -180,7 +226,7 @@ export default function CategoryDetail() {
   useEffect(() => {
     sessionStorage.setItem(catFiltersKey(slug), JSON.stringify(snapshotFilters()));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, subcat, selectedTags, brand, stock, priceRange, sort, bookAuthor, bookPublisher, bookGenre, bookLanguage]);
+  }, [slug, subcat, selectedTags, brands, availability, promoOnly, priceRange, sort, bookAuthor, bookPublisher, bookGenre, bookLanguage]);
 
   // Navigating to a different category (not just a different subcategory pill)
   // clears that previous category's saved filters and loads whatever was saved
@@ -193,8 +239,9 @@ export default function CategoryDetail() {
     const saved = readSavedCatFilters(slug);
     setSubcat(saved?.subcategory || '');
     setSelectedTags(saved?.tags || []);
-    setBrand(saved?.brand || '');
-    setStock(saved?.stock || '');
+    setBrands(saved?.brands || []);
+    setAvailability(saved?.availability || []);
+    setPromoOnly(saved?.promoOnly || false);
     setPriceRange(saved?.priceRange || '');
     setSort(saved?.sort || 'pertinence');
     setBookAuthor(saved?.bookAuthor || '');
@@ -241,22 +288,45 @@ export default function CategoryDetail() {
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const paged = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const hasActiveFilters = isBookCategory
-    ? Boolean(subcat || selectedTags.length || bookAuthor || bookPublisher || bookGenre || bookLanguage || priceRange)
-    : Boolean(subcat || selectedTags.length || brand || priceRange || stock);
+  const activeFilterCount = isBookCategory
+    ? [bookAuthor, bookPublisher, bookGenre, bookLanguage, priceRange].filter(Boolean).length + (selectedTags.length > 0 ? 1 : 0)
+    : (brands.length > 0 ? 1 : 0) + (priceRange ? 1 : 0) + (availability.length > 0 ? 1 : 0) + (promoOnly ? 1 : 0) + (selectedTags.length > 0 ? 1 : 0);
 
   function toggleTag(tag) {
     setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
   }
 
+  function toggleBrand(b) {
+    setBrands(prev => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b]);
+  }
+
+  function toggleAvailability(state) {
+    setAvailability(prev => prev.includes(state) ? prev.filter(x => x !== state) : [...prev, state]);
+  }
+
   function resetFilters() {
     setSubcat(''); setSelectedTags([]);
-    setBrand(''); setPriceRange(''); setStock('');
+    setBrands([]); setPriceRange(''); setAvailability([]); setPromoOnly(false);
     setBookAuthor(''); setBookPublisher(''); setBookGenre(''); setBookLanguage('');
   }
 
+  // Removable chips shown below the pills row for filters applied via the panel
+  const filterChips = [];
+  if (isBookCategory) {
+    if (bookAuthor) filterChips.push({ id: 'author', label: bookAuthor, onRemove: () => setBookAuthor('') });
+    if (bookPublisher) filterChips.push({ id: 'publisher', label: bookPublisher, onRemove: () => setBookPublisher('') });
+    if (bookGenre) filterChips.push({ id: 'genre', label: bookGenre, onRemove: () => setBookGenre('') });
+    if (bookLanguage) filterChips.push({ id: 'language', label: bookLanguage, onRemove: () => setBookLanguage('') });
+  } else {
+    brands.forEach(b => filterChips.push({ id: `brand-${b}`, label: b, onRemove: () => toggleBrand(b) }));
+    availability.forEach(a => filterChips.push({ id: `avail-${a}`, label: STOCK_LABELS[a], onRemove: () => toggleAvailability(a) }));
+    if (promoOnly) filterChips.push({ id: 'promo', label: 'Promotions', onRemove: () => setPromoOnly(false) });
+  }
+  if (priceRange) filterChips.push({ id: 'price', label: PRICE_RANGE_LABELS[priceRange], onRemove: () => setPriceRange('') });
+  selectedTags.forEach(t => filterChips.push({ id: `tag-${t}`, label: t, onRemove: () => toggleTag(t) }));
+
   return (
-    <div className="flex flex-col gap-5 px-4 lg:px-0 py-4">
+    <PageTransition className="flex flex-col gap-5 px-4 lg:px-0 py-4">
       <div className="flex items-center gap-1.5 text-[12px] text-txt-2 overflow-x-auto whitespace-nowrap">
         <Link to="/" className="hover:text-txt-1">Accueil</Link>
         <ChevronRight size={12} className="shrink-0" />
@@ -280,128 +350,185 @@ export default function CategoryDetail() {
             </p>
           </div>
 
-          {/* Subcategory pills */}
+          {/* Subcategory pills — horizontally scrollable, no visible scrollbar, edge fades */}
           {(subcategoryDocs.length > 0 || fallbackSubNames.length > 0) && (
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              <button
-                type="button"
-                onClick={() => setSubcat('')}
-                className={`shrink-0 whitespace-nowrap text-[12px] font-medium rounded-full px-3.5 py-1.5 transition-colors ${subcat === '' ? 'bg-blue text-white' : 'bg-surface-1 border border-bord text-txt-2'}`}
+            <div className="relative">
+              <div
+                ref={pillsRef}
+                onScroll={updatePillsFade}
+                className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide"
               >
-                Tous
-              </button>
-              {subcategoryDocs.length > 0
-                ? subcategoryDocs.map(sub => (
-                    <button
-                      key={sub.id}
-                      type="button"
-                      onClick={() => setSubcat(sub.id)}
-                      className={`shrink-0 whitespace-nowrap text-[12px] font-medium rounded-full px-3.5 py-1.5 transition-colors ${subcat === sub.id ? 'bg-blue text-white' : 'bg-surface-1 border border-bord text-txt-2'}`}
-                    >
-                      {isBookCategory && sub.nameAr ? (
-                        <span>{sub.name} <span className="opacity-60" dir="rtl">· {sub.nameAr}</span></span>
-                      ) : sub.name}
-                    </button>
-                  ))
-                : fallbackSubNames.map(name => (
-                    <button
-                      key={name}
-                      type="button"
-                      onClick={() => setSubcat(name)}
-                      className={`shrink-0 whitespace-nowrap text-[12px] font-medium rounded-full px-3.5 py-1.5 transition-colors ${subcat === name ? 'bg-blue text-white' : 'bg-surface-1 border border-bord text-txt-2'}`}
-                    >
-                      {name}
-                    </button>
-                  ))}
+                <button type="button" onClick={() => setSubcat('')} className={pillCls(subcat === '')}>
+                  Tous
+                </button>
+                {subcategoryDocs.length > 0
+                  ? subcategoryDocs.map(sub => (
+                      <button key={sub.id} type="button" onClick={() => setSubcat(sub.id)} className={pillCls(subcat === sub.id)}>
+                        {isBookCategory && sub.nameAr ? (
+                          <span>{sub.name} <span className="opacity-60" dir="rtl">· {sub.nameAr}</span></span>
+                        ) : sub.name}
+                      </button>
+                    ))
+                  : fallbackSubNames.map(name => (
+                      <button key={name} type="button" onClick={() => setSubcat(name)} className={pillCls(subcat === name)}>
+                        {name}
+                      </button>
+                    ))}
+              </div>
+              {canScrollLeft && (
+                <div className="pointer-events-none absolute left-0 inset-y-0 w-8 bg-gradient-to-r from-surface-0 to-transparent" />
+              )}
+              {canScrollRight && (
+                <div className="pointer-events-none absolute right-0 inset-y-0 w-8 bg-gradient-to-l from-surface-0 to-transparent" />
+              )}
             </div>
           )}
 
-          {/* Filter bar — book-specific or standard */}
-          <div className="flex items-center gap-2 pb-1 flex-wrap">
-            <TagsFilterDropdown availableTags={availableTags} selectedTags={selectedTags} onToggle={toggleTag} />
-            {isBookCategory ? (
-              <>
-                <select value={bookAuthor} onChange={e => setBookAuthor(e.target.value)} className={selectCls}>
-                  <option value="">Auteur</option>
-                  {uniqueAuthors.map(a => <option key={a} value={a}>{a}</option>)}
-                </select>
-                <select value={bookPublisher} onChange={e => setBookPublisher(e.target.value)} className={selectCls}>
-                  <option value="">Éditeur</option>
-                  {uniquePublishers.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
-                {uniqueGenres.length > 0 && (
-                  <select value={bookGenre} onChange={e => setBookGenre(e.target.value)} className={selectCls}>
-                    <option value="">Genre</option>
-                    {uniqueGenres.map(g => <option key={g} value={g}>{g}</option>)}
-                  </select>
-                )}
-                <select value={bookLanguage} onChange={e => setBookLanguage(e.target.value)} className={selectCls}>
-                  <option value="">Langue</option>
-                  {BOOK_LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
-                </select>
-              </>
-            ) : (
-              <>
-                <select value={brand} onChange={e => setBrand(e.target.value)} className={selectCls}>
-                  <option value="">Marque</option>
-                  {uniqueBrands.map(b => <option key={b} value={b}>{b}</option>)}
-                </select>
-                <select value={stock} onChange={e => setStock(e.target.value)} className={selectCls}>
-                  <option value="">Stock</option>
-                  <option value="in">En stock</option>
-                  <option value="out">Rupture</option>
-                </select>
-              </>
-            )}
-            <select value={priceRange} onChange={e => setPriceRange(e.target.value)} className={selectCls}>
-              <option value="">Tous les prix</option>
-              <option value="lt10">Moins de 10 DH</option>
-              <option value="10-50">10-50 DH</option>
-              <option value="50-100">50-100 DH</option>
-              <option value="gt100">Plus de 100 DH</option>
-            </select>
+          {/* Filtres button + Trier par */}
+          <div className="flex items-center justify-end gap-2">
+            <FilterTriggerButton count={activeFilterCount} onClick={() => setPanelOpen(true)} />
             <select value={sort} onChange={e => setSort(e.target.value)} className={selectCls}>
               <option value="pertinence">Pertinence</option>
               <option value="asc">Prix croissant</option>
               <option value="desc">Prix décroissant</option>
               <option value="new">Nouveautés</option>
             </select>
-            {hasActiveFilters && (
-              <button type="button" onClick={resetFilters} className="text-[12px] font-medium text-blue shrink-0 px-2">
-                Réinitialiser
-              </button>
-            )}
           </div>
 
-          {/* Selected tags — removable chips */}
-          {selectedTags.length > 0 && (
+          {/* Applied filters — removable chips */}
+          {filterChips.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
-              {selectedTags.map(tag => (
-                <span key={tag} className="inline-flex items-center gap-1 bg-blue-light text-blue text-[11px] font-medium rounded-full pl-3 pr-1.5 py-1">
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => toggleTag(tag)}
-                    className="w-4 h-4 rounded-full hover:bg-blue/20 flex items-center justify-center"
-                  >
-                    <X size={10} />
-                  </button>
-                </span>
+              {filterChips.map(chip => (
+                <FilterChip key={chip.id} label={chip.label} onRemove={chip.onRemove} />
               ))}
             </div>
           )}
 
-          {loading || catLoading ? (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
-              {Array.from({ length: PAGE_SIZE }).map((_, i) => <ProductCardSkeleton key={i} />)}
-            </div>
+          <FilterPanel
+            open={panelOpen}
+            onClose={() => setPanelOpen(false)}
+            onReset={resetFilters}
+            resultCount={sorted.length}
+            resultLabel={`produit${sorted.length !== 1 ? 's' : ''}`}
+          >
+            {isBookCategory ? (
+              <>
+                <FilterSection title="Auteur">
+                  <label className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                    <input type="radio" name="bookAuthor" checked={bookAuthor === ''} onChange={() => setBookAuthor('')} className="accent-blue" />
+                    Tous les auteurs
+                  </label>
+                  {uniqueAuthors.map(a => (
+                    <label key={a} className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                      <input type="radio" name="bookAuthor" checked={bookAuthor === a} onChange={() => setBookAuthor(a)} className="accent-blue" />
+                      {a}
+                    </label>
+                  ))}
+                </FilterSection>
+                <FilterSection title="Éditeur">
+                  <label className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                    <input type="radio" name="bookPublisher" checked={bookPublisher === ''} onChange={() => setBookPublisher('')} className="accent-blue" />
+                    Tous les éditeurs
+                  </label>
+                  {uniquePublishers.map(p => (
+                    <label key={p} className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                      <input type="radio" name="bookPublisher" checked={bookPublisher === p} onChange={() => setBookPublisher(p)} className="accent-blue" />
+                      {p}
+                    </label>
+                  ))}
+                </FilterSection>
+                {uniqueGenres.length > 0 && (
+                  <FilterSection title="Genre">
+                    <label className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                      <input type="radio" name="bookGenre" checked={bookGenre === ''} onChange={() => setBookGenre('')} className="accent-blue" />
+                      Tous les genres
+                    </label>
+                    {uniqueGenres.map(g => (
+                      <label key={g} className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                        <input type="radio" name="bookGenre" checked={bookGenre === g} onChange={() => setBookGenre(g)} className="accent-blue" />
+                        {g}
+                      </label>
+                    ))}
+                  </FilterSection>
+                )}
+                <FilterSection title="Langue">
+                  <label className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                    <input type="radio" name="bookLanguage" checked={bookLanguage === ''} onChange={() => setBookLanguage('')} className="accent-blue" />
+                    Toutes les langues
+                  </label>
+                  {BOOK_LANGUAGES.map(l => (
+                    <label key={l} className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                      <input type="radio" name="bookLanguage" checked={bookLanguage === l} onChange={() => setBookLanguage(l)} className="accent-blue" />
+                      {l}
+                    </label>
+                  ))}
+                </FilterSection>
+              </>
+            ) : (
+              <>
+                {uniqueBrands.length > 0 && (
+                  <FilterSection title="Marque">
+                    {uniqueBrands.map(b => (
+                      <label key={b} className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                        <input type="checkbox" checked={brands.includes(b)} onChange={() => toggleBrand(b)} className="accent-blue" />
+                        {b}
+                      </label>
+                    ))}
+                  </FilterSection>
+                )}
+                <FilterSection title="Disponibilité">
+                  {AVAILABILITY_ORDER.map(state => (
+                    <label key={state} className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                      <input type="checkbox" checked={availability.includes(state)} onChange={() => toggleAvailability(state)} className="accent-blue" />
+                      {STOCK_LABELS[state]}
+                    </label>
+                  ))}
+                </FilterSection>
+                <FilterSection title="Promotions">
+                  <label className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                    <input type="checkbox" checked={promoOnly} onChange={e => setPromoOnly(e.target.checked)} className="accent-blue" />
+                    Uniquement les promos
+                  </label>
+                </FilterSection>
+              </>
+            )}
+
+            <FilterSection title="Prix">
+              {[
+                ['', 'Tous les prix'],
+                ['lt10', 'Moins de 10 DH'],
+                ['10-50', '10-50 DH'],
+                ['50-100', '50-100 DH'],
+                ['gt100', 'Plus de 100 DH'],
+              ].map(([value, label]) => (
+                <label key={value || 'all'} className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                  <input type="radio" name="priceRange" checked={priceRange === value} onChange={() => setPriceRange(value)} className="accent-blue" />
+                  {label}
+                </label>
+              ))}
+            </FilterSection>
+
+            {availableTags.length > 0 && (
+              <FilterSection title="Tags">
+                {availableTags.map(tag => (
+                  <label key={tag} className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                    <input type="checkbox" checked={selectedTags.includes(tag)} onChange={() => toggleTag(tag)} className="accent-blue" />
+                    {tag}
+                  </label>
+                ))}
+              </FilterSection>
+            )}
+          </FilterPanel>
+
+          {showSkeleton ? (
+            <SkeletonRow />
           ) : sorted.length === 0 ? (
             <p className="text-[13px] text-txt-3">Aucun produit ne correspond à ces filtres.</p>
           ) : (
             <>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5" onClick={handleProductGridClick}>
+              <StaggeredFadeIn className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5" onClick={handleProductGridClick}>
                 {paged.map(p => <ProductCard key={p.id} product={p} />)}
-              </div>
+              </StaggeredFadeIn>
 
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-3 pt-2">
@@ -428,45 +555,6 @@ export default function CategoryDetail() {
           )}
         </>
       )}
-    </div>
-  );
-}
-
-function TagsFilterDropdown({ availableTags, selectedTags, onToggle }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function handleClickOutside(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open]);
-
-  if (availableTags.length === 0) return null;
-
-  return (
-    <div className="relative shrink-0" ref={ref}>
-      <button type="button" onClick={() => setOpen(o => !o)} className={selectCls}>
-        Tags{selectedTags.length > 0 ? ` (${selectedTags.length})` : ''}
-      </button>
-      {open && (
-        <div className="absolute top-full left-0 mt-1 bg-surface-1 border border-bord rounded-xl shadow-xl z-20 max-h-64 overflow-y-auto min-w-[180px] p-2">
-          {availableTags.map(tag => (
-            <label key={tag} className="flex items-center gap-2 px-2 py-1.5 text-[12px] text-txt-1 hover:bg-surface-2 rounded-lg cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedTags.includes(tag)}
-                onChange={() => onToggle(tag)}
-                className="accent-blue"
-              />
-              {tag}
-            </label>
-          ))}
-        </div>
-      )}
-    </div>
+    </PageTransition>
   );
 }

@@ -5,13 +5,27 @@ import { usePacks } from '../../hooks/usePacks';
 import { useSchools } from '../../hooks/useSchools';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../components/Toast';
-import { Skeleton } from '../../components/Skeleton';
+import { SkeletonRow, FadeIn } from '../../components/SkeletonCard';
+import { useMinLoadingTime } from '../../hooks/useMinLoadingTime';
+import PageTransition from '../../components/PageTransition';
+import FilterPanel, { FilterSection, FilterTriggerButton, FilterChip } from '../../components/store/FilterPanel';
 import { formatPrice } from '../../lib/pricing';
 import { buildWhatsAppLink } from '../../lib/contact';
 import { MANUEL_NIVEAUX, MANUEL_CLASSES } from '../../lib/manuelLevels';
 import CachedImage from '../../components/CachedImage';
 
 const PAGE_SIZE = 8;
+
+const PACKS_FILTERS_KEY = 'younasser_packs_filters';
+
+function readSavedPacksFilters() {
+  try {
+    const raw = sessionStorage.getItem(PACKS_FILTERS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 function discountPct(pack) {
   const total = pack.totalItemsPrice || 0;
@@ -91,7 +105,7 @@ function PackCard({ pack }) {
       <button
         type="button"
         onClick={handleAdd}
-        className="mt-1 w-full bg-blue text-white text-[13px] font-semibold py-2.5 rounded-xl hover:opacity-90 transition-opacity"
+        className="mt-1 w-full bg-blue text-white text-[13px] font-semibold py-2.5 rounded-xl hover:opacity-90 active:scale-95 transition-all"
       >
         Ajouter au panier
       </button>
@@ -102,12 +116,20 @@ function PackCard({ pack }) {
 export default function Packs() {
   const { packs, loading } = usePacks();
   const { schools } = useSchools();
-  const [search, setSearch] = useState('');
-  const [ecole, setEcole] = useState('');
-  const [level, setLevel] = useState('');
-  const [classe, setClasse] = useState('');
-  const [sort, setSort] = useState('pertinence');
+  const showSkeleton = useMinLoadingTime(loading);
+  const savedFilters = readSavedPacksFilters();
+
+  const [search, setSearch] = useState(() => savedFilters?.search || '');
+  const [ecole, setEcole] = useState(() => savedFilters?.ecole || '');
+  const [level, setLevel] = useState(() => savedFilters?.level || '');
+  const [classe, setClasse] = useState(() => savedFilters?.classe || '');
+  const [sort, setSort] = useState(() => savedFilters?.sort || 'pertinence');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [panelOpen, setPanelOpen] = useState(false);
+
+  useEffect(() => {
+    sessionStorage.setItem(PACKS_FILTERS_KEY, JSON.stringify({ search, ecole, level, classe, sort }));
+  }, [search, ecole, level, classe, sort]);
 
   const classeOptions = MANUEL_CLASSES[level] || [];
 
@@ -132,13 +154,17 @@ export default function Packs() {
   const visible = sorted.slice(0, visibleCount);
   const whatsappHelpHref = buildWhatsAppLink('Bonjour, je ne trouve pas le pack pour mon école, pouvez-vous m\'aider?');
 
-  const hasActiveFilters = Boolean(search || ecole || level || classe);
+  const panelFilterCount = (level ? 1 : 0) + (classe ? 1 : 0);
   function resetFilters() {
-    setSearch(''); setEcole(''); setLevel(''); setClasse(''); setSort('pertinence');
+    setLevel(''); setClasse('');
   }
 
+  const filterChips = [];
+  if (level) filterChips.push({ id: 'level', label: level, onRemove: () => { setLevel(''); setClasse(''); } });
+  if (classe) filterChips.push({ id: 'classe', label: classe, onRemove: () => setClasse('') });
+
   return (
-    <div className="flex flex-col gap-5 px-4 lg:px-0 py-4">
+    <PageTransition className="flex flex-col gap-5 px-4 lg:px-0 py-4">
       <div className="text-center lg:text-left">
         <h1 className="text-xl font-bold text-txt-1">Packs scolaires</h1>
         <p className="text-[13px] text-txt-2 mt-0.5">Tout le nécessaire pour une rentrée réussie</p>
@@ -173,29 +199,55 @@ export default function Packs() {
           <option value="">École</option>
           {schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
-        <select
-          value={level}
-          onChange={e => { setLevel(e.target.value); setClasse(''); }}
-          className="bg-surface-1 border border-bord rounded-xl px-3 py-2 text-[12px] text-txt-1 shrink-0 outline-none"
-        >
-          <option value="">Niveau</option>
-          {MANUEL_NIVEAUX.map(n => <option key={n} value={n}>{n}</option>)}
-        </select>
-        <select
-          value={classe}
-          onChange={e => setClasse(e.target.value)}
-          disabled={!level}
-          className="bg-surface-1 border border-bord rounded-xl px-3 py-2 text-[12px] text-txt-1 shrink-0 outline-none disabled:opacity-50"
-        >
-          <option value="">Classe</option>
-          {classeOptions.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        {hasActiveFilters && (
-          <button type="button" onClick={resetFilters} className="text-[12px] font-medium text-blue shrink-0 px-2">
-            Réinitialiser
-          </button>
-        )}
+        <FilterTriggerButton count={panelFilterCount} onClick={() => setPanelOpen(true)} />
       </div>
+
+      {filterChips.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {filterChips.map(chip => (
+            <FilterChip key={chip.id} label={chip.label} onRemove={chip.onRemove} />
+          ))}
+        </div>
+      )}
+
+      <FilterPanel
+        open={panelOpen}
+        onClose={() => setPanelOpen(false)}
+        onReset={resetFilters}
+        resultCount={sorted.length}
+        resultLabel={`pack${sorted.length !== 1 ? 's' : ''}`}
+      >
+        <FilterSection title="Niveau">
+          <label className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+            <input type="radio" name="level" checked={level === ''} onChange={() => { setLevel(''); setClasse(''); }} className="accent-blue" />
+            Tous les niveaux
+          </label>
+          {MANUEL_NIVEAUX.map(n => (
+            <label key={n} className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+              <input type="radio" name="level" checked={level === n} onChange={() => { setLevel(n); setClasse(''); }} className="accent-blue" />
+              {n}
+            </label>
+          ))}
+        </FilterSection>
+        <FilterSection title="Classe">
+          {!level ? (
+            <p className="text-[12px] text-txt-3">Sélectionnez d'abord un niveau.</p>
+          ) : (
+            <>
+              <label className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                <input type="radio" name="classe" checked={classe === ''} onChange={() => setClasse('')} className="accent-blue" />
+                Toutes les classes
+              </label>
+              {classeOptions.map(c => (
+                <label key={c} className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
+                  <input type="radio" name="classe" checked={classe === c} onChange={() => setClasse(c)} className="accent-blue" />
+                  {c}
+                </label>
+              ))}
+            </>
+          )}
+        </FilterSection>
+      </FilterPanel>
 
       <div className="flex items-center justify-between">
         <span className="text-[13px] font-semibold text-txt-1">Résultats ({sorted.length} pack{sorted.length !== 1 ? 's' : ''})</span>
@@ -210,24 +262,15 @@ export default function Packs() {
         </select>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-            <div key={i} className="bg-white rounded-xl shadow-sm p-4 flex flex-col items-center gap-2.5">
-              <Skeleton className="w-full aspect-[4/5] rounded-xl mt-2" />
-              <Skeleton className="h-4 w-3/4 mt-1" />
-              <Skeleton className="h-3 w-1/2" />
-              <Skeleton className="h-9 w-full rounded-xl mt-1" />
-            </div>
-          ))}
-        </div>
+      {showSkeleton ? (
+        <SkeletonRow />
       ) : sorted.length === 0 ? (
         <p className="text-[13px] text-txt-3">Aucun pack trouvé pour ces critères.</p>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <FadeIn className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {visible.map(pack => <PackCard key={pack.id} pack={pack} />)}
-          </div>
+          </FadeIn>
           {visibleCount < sorted.length && (
             <button
               type="button"
@@ -239,6 +282,6 @@ export default function Packs() {
           )}
         </>
       )}
-    </div>
+    </PageTransition>
   );
 }

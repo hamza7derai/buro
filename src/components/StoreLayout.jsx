@@ -8,9 +8,11 @@ import {
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductsContext';
 import { useFavorites } from '../context/FavoritesContext';
+import { useCategories } from '../hooks/useCategories';
 import { formatPrice, getPrice } from '../lib/pricing';
 import { buildWhatsAppLink } from '../lib/contact';
 import CachedImage from './CachedImage';
+import StoreFooter from './StoreFooter';
 
 const NAV_LINKS = [
   { to: '/', icon: Home, label: 'Accueil', desktopLabel: 'Accueil', end: true },
@@ -24,6 +26,7 @@ export default function StoreLayout() {
   const { cartCount, cartTotal, cartItems, removeFromCart, updateQuantity } = useCart();
   const { products } = useProducts();
   const { favCount } = useFavorites();
+  const { getCategoryName } = useCategories();
   const location = useLocation();
   const isCheckout = location.pathname === '/checkout';
   const [hasProfile, setHasProfile] = useState(false);
@@ -108,7 +111,7 @@ export default function StoreLayout() {
           <Link to="/panier" className="relative w-9 h-9 rounded-lg bg-blue flex items-center justify-center">
             <ShoppingCart size={18} className="text-white" />
             {cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-brand-500 text-[10px] font-bold text-white flex items-center justify-center">
+              <span key={cartCount} className="cart-badge-pulse absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-brand-500 text-[10px] font-bold text-white flex items-center justify-center">
                 {cartCount}
               </span>
             )}
@@ -158,7 +161,8 @@ export default function StoreLayout() {
                 ) : (
                   searchResults.map(p => {
                     const { price } = getPrice(p);
-                    const category = p.categoryPath?.[0] || p.famille || '';
+                    const categoryRaw = p.categoryPath?.[0] || p.famille || '';
+                    const category = getCategoryName(categoryRaw) || categoryRaw;
                     return (
                       <Link
                         key={p.id}
@@ -207,7 +211,7 @@ export default function StoreLayout() {
               <span className="relative w-9 h-9 rounded-lg bg-blue flex items-center justify-center">
                 <ShoppingCart size={18} className="text-white" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-brand-500 text-[10px] font-bold text-white flex items-center justify-center">
+                  <span key={cartCount} className="cart-badge-pulse absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-brand-500 text-[10px] font-bold text-white flex items-center justify-center">
                     {cartCount}
                   </span>
                 )}
@@ -354,6 +358,8 @@ export default function StoreLayout() {
           </div>
         </aside>}
       </div>
+
+      <StoreFooter />
 
       {/* Floating WhatsApp button — mobile/tablet only, desktop has the header button */}
       <a

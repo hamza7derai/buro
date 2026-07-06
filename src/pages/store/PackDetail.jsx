@@ -10,6 +10,7 @@ import { useToast } from '../../components/Toast';
 import { formatPrice } from '../../lib/pricing';
 import ProductCard from '../../components/store/ProductCard';
 import CachedImage from '../../components/CachedImage';
+import PageTransition from '../../components/PageTransition';
 
 function usePackDetail(slugOrId) {
   const [pack, setPack] = useState(null);
@@ -130,18 +131,18 @@ export default function PackDetail() {
   }
 
   if (loading) {
-    return <div className="px-4 py-20 text-center text-[13px] text-txt-3">Chargement...</div>;
+    return <PageTransition className="px-4 py-20 text-center text-[13px] text-txt-3">Chargement...</PageTransition>;
   }
 
   if (notFound || !pack) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 px-4 py-20 text-center">
+      <PageTransition className="flex flex-col items-center justify-center gap-3 px-4 py-20 text-center">
         <Gift size={40} className="text-txt-3" />
         <h1 className="text-lg font-bold text-txt-1">Pack introuvable</h1>
         <Link to="/packs" className="mt-2 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
           Retour aux packs
         </Link>
-      </div>
+      </PageTransition>
     );
   }
 
@@ -150,7 +151,7 @@ export default function PackDetail() {
     .filter(Boolean);
 
   return (
-    <div className="flex flex-col gap-6 pb-28 lg:pb-6">
+    <PageTransition className="flex flex-col gap-6 pb-28 lg:pb-6">
       {/* Mobile sub-header */}
       <div className="lg:hidden flex items-center justify-between px-4 pt-2">
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-surface-1 border border-bord flex items-center justify-center text-txt-1">
@@ -254,11 +255,11 @@ export default function PackDetail() {
           type="button"
           onClick={handleAddToCart}
           disabled={selectedCount === 0}
-          className="flex items-center gap-2 bg-blue text-white font-semibold text-[14px] px-5 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 bg-blue text-white font-semibold text-[14px] px-5 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-95 transition-all"
         >
           <ShoppingCart size={16} /> Ajouter au panier
         </button>
       </div>
-    </div>
+    </PageTransition>
   );
 }

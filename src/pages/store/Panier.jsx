@@ -5,6 +5,7 @@ import { useCart } from '../../context/CartContext';
 import { formatPrice } from '../../lib/pricing';
 import { DELIVERY_FEE } from '../../lib/checkoutPricing';
 import CachedImage from '../../components/CachedImage';
+import PageTransition from '../../components/PageTransition';
 
 export default function Panier() {
   const {
@@ -24,21 +25,21 @@ export default function Panier() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 px-4 py-20 text-center">
+      <PageTransition className="flex flex-col items-center justify-center gap-3 px-4 py-20 text-center">
         <ShoppingCart size={40} className="text-txt-3" />
         <h1 className="text-lg font-bold text-txt-1">Votre panier est vide</h1>
         <p className="text-[13px] text-txt-2 max-w-xs">Parcourez nos catégories pour trouver vos fournitures, manuels et accessoires.</p>
         <Link to="/" className="mt-2 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
           Voir nos produits
         </Link>
-      </div>
+      </PageTransition>
     );
   }
 
   const deliveryFee = DELIVERY_FEE;
 
   return (
-    <div className="flex flex-col gap-5 px-4 lg:px-0 py-4">
+    <PageTransition className="flex flex-col gap-5 px-4 lg:px-0 py-4">
       <h1 className="text-xl font-bold text-txt-1">
         Mon panier <span className="text-txt-3 font-medium text-[14px]">({cartCount} article{cartCount > 1 ? 's' : ''})</span>
       </h1>
@@ -129,6 +130,6 @@ export default function Panier() {
           </Link>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }

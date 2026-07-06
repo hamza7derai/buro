@@ -8,7 +8,7 @@ import { useToast } from '../Toast';
 import { getPrice, formatPrice, isPromoActive } from '../../lib/pricing';
 import { getStockState, STOCK_LABELS, STOCK_DOT_CLASS } from '../../lib/stock';
 
-export default function ProductCard({ product, className = '' }) {
+export default function ProductCard({ product, className = '', style }) {
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { getCategoryName } = useCategories();
@@ -39,7 +39,7 @@ export default function ProductCard({ product, className = '' }) {
   }
 
   return (
-    <div className={`relative bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col ${className}`}>
+    <div className={`relative bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col ${className}`} style={style}>
       <Link to={href} className="relative block aspect-square bg-white rounded-t-xl overflow-hidden">
         {product.mainImage ? (
           <CachedImage src={product.mainImage} alt={product.name} className="w-full h-full object-contain" />
@@ -91,7 +91,7 @@ export default function ProductCard({ product, className = '' }) {
             type="button"
             disabled={!inStock}
             onClick={() => addToCart(product, null, 1)}
-            className="w-8 h-8 rounded-full bg-blue text-white flex items-center justify-center shrink-0 disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+            className="w-8 h-8 rounded-full bg-blue text-white flex items-center justify-center shrink-0 disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-95 transition-all"
           >
             <Plus size={16} />
           </button>

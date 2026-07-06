@@ -26,6 +26,7 @@ const StoreCategories = lazy(() => import('./pages/store/Categories'));
 const StoreCategoryDetail = lazy(() => import('./pages/store/CategoryDetail'));
 const StoreProductDetail = lazy(() => import('./pages/store/ProductDetail'));
 const StoreManuels = lazy(() => import('./pages/store/Manuels'));
+const StoreRecentlyViewed = lazy(() => import('./pages/store/RecentlyViewed'));
 const StorePacks = lazy(() => import('./pages/store/Packs'));
 const StorePackDetail = lazy(() => import('./pages/store/PackDetail'));
 const StorePanier = lazy(() => import('./pages/store/Panier'));
@@ -103,6 +104,7 @@ export default function App() {
             <Route path="categories/:slug" element={<StoreCategoryDetail />} />
             <Route path="produit/:slug" element={<StoreProductDetail />} />
             <Route path="manuels" element={<StoreManuels />} />
+            <Route path="recemment-consultes" element={<StoreRecentlyViewed />} />
             <Route path="packs" element={<StorePacks />} />
             <Route path="packs/:slug" element={<StorePackDetail />} />
             <Route path="panier" element={<StorePanier />} />

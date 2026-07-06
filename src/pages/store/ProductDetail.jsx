@@ -6,12 +6,17 @@ import { useProducts } from '../../hooks/useProducts';
 import { useCategories } from '../../hooks/useCategories';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../components/Toast';
+import { useRecentlyViewed } from '../../hooks/useRecentlyViewed';
+import { useMinLoadingTime } from '../../hooks/useMinLoadingTime';
 import { getPrice, formatPrice } from '../../lib/pricing';
 import { getStockState, STOCK_LABELS, STOCK_DOT_CLASS, STOCK_TEXT_CLASS } from '../../lib/stock';
 import { resolveCategoryLabel } from '../../lib/categoryIcons';
 import { genreLabel } from '../../lib/bookMeta';
 import ProductCard from '../../components/store/ProductCard';
 import CachedImage from '../../components/CachedImage';
+import { SkeletonProductDetail } from '../../components/SkeletonProductDetail';
+import { FadeIn } from '../../components/SkeletonCard';
+import PageTransition from '../../components/PageTransition';
 
 export default function ProductDetail() {
   const { slug } = useParams();
@@ -21,6 +26,8 @@ export default function ProductDetail() {
   const { products: allProducts, fetchVariants } = useProducts();
   const { categories, subCategoriesOf } = useCategories();
   const { addToCart, cartCount } = useCart();
+  const { recentlyViewedIds, addRecentlyViewed } = useRecentlyViewed();
+  const showSkeleton = useMinLoadingTime(loading);
 
   const [selectedOptions, setSelectedOptions] = useState({});
   const [quantity, setQuantity] = useState(1);
@@ -44,19 +51,27 @@ export default function ProductDetail() {
     setActiveImage(0);
   }, [selectedVariant?.id]);
 
-  if (loading) {
-    return <div className="px-4 py-20 text-center text-[13px] text-txt-3">Chargement...</div>;
+  useEffect(() => {
+    if (product?.id) addRecentlyViewed(product.id);
+  }, [product?.id, addRecentlyViewed]);
+
+  if (showSkeleton) {
+    return (
+      <PageTransition>
+        <SkeletonProductDetail />
+      </PageTransition>
+    );
   }
 
   if (notFound || !product) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 px-4 py-20 text-center">
+      <PageTransition className="flex flex-col items-center justify-center gap-3 px-4 py-20 text-center">
         <Package size={40} className="text-txt-3" />
         <h1 className="text-lg font-bold text-txt-1">Produit introuvable</h1>
         <Link to="/" className="mt-2 bg-blue text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
           Retour à l'accueil
         </Link>
-      </div>
+      </PageTransition>
     );
   }
 
@@ -95,6 +110,11 @@ export default function ProductDetail() {
     return getPrice(p, p.id === product.id ? selectedVariant : null).price;
   }
   const bundleTotal = bundleItems.reduce((sum, p) => sum + bundleItemPrice(p), 0);
+
+  const alsoViewed = recentlyViewedIds
+    .filter(id => id !== product.id)
+    .map(id => allProducts.find(p => p.id === id))
+    .filter(p => p && p.isVisible !== false);
 
   function decQty() { setQuantity(q => Math.max(1, q - 1)); }
   function incQty() { setQuantity(q => (stockValue != null ? Math.min(Math.max(stockValue, 1), q + 1) : q + 1)); }
@@ -140,7 +160,8 @@ export default function ProductDetail() {
   }
 
   return (
-    <div className="flex flex-col gap-6 pb-6">
+    <PageTransition>
+    <FadeIn className="flex flex-col gap-6 pb-6">
       {/* Breadcrumb */}
       <div className="px-4 lg:px-0 flex items-center gap-1.5 text-[12px] text-txt-2 overflow-x-auto whitespace-nowrap pt-2">
         <Link to="/" className="hover:text-txt-1">Accueil</Link>
@@ -168,7 +189,7 @@ export default function ProductDetail() {
         <Link to="/panier" className="relative w-9 h-9 rounded-full bg-surface-1 border border-bord flex items-center justify-center text-navy">
           <ShoppingCart size={18} />
           {cartCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-brand-500 text-[9px] font-bold text-white flex items-center justify-center">
+            <span key={cartCount} className="cart-badge-pulse absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-brand-500 text-[9px] font-bold text-white flex items-center justify-center">
               {cartCount}
             </span>
           )}
@@ -312,7 +333,7 @@ export default function ProductDetail() {
             type="button"
             onClick={() => handleAddToCart()}
             disabled={!inStock || (product.hasVariants && !selectedVariant)}
-            className="w-full flex items-center justify-center gap-2 bg-blue text-white font-semibold text-[14px] py-3.5 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+            className="w-full flex items-center justify-center gap-2 bg-blue text-white font-semibold text-[14px] py-3.5 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-95 transition-all"
           >
             <ShoppingCart size={18} /> Ajouter au panier
           </button>
@@ -374,7 +395,7 @@ export default function ProductDetail() {
                 <button
                   type="button"
                   onClick={handleAddLot}
-                  className="bg-blue text-white text-[12px] font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
+                  className="bg-blue text-white text-[12px] font-semibold px-4 py-2 rounded-xl hover:opacity-90 active:scale-95 transition-all"
                 >
                   Ajouter au panier
                 </button>
@@ -462,7 +483,7 @@ export default function ProductDetail() {
               <button
                 type="button"
                 onClick={handleAddBundle}
-                className="bg-blue text-white text-[12px] font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
+                className="bg-blue text-white text-[12px] font-semibold px-4 py-2 rounded-xl hover:opacity-90 active:scale-95 transition-all"
               >
                 Ajouter le pack
               </button>
@@ -479,6 +500,16 @@ export default function ProductDetail() {
             </div>
           </section>
         )}
+
+        {/* Vous avez aussi consulté */}
+        {alsoViewed.length > 0 && (
+          <section>
+            <h2 className="text-[14px] font-bold text-txt-1 mb-3">Vous avez aussi consulté</h2>
+            <div className="flex gap-3 overflow-x-auto pb-1 lg:grid lg:grid-cols-4 lg:gap-4 lg:overflow-visible">
+              {alsoViewed.map(p => <ProductCard key={p.id} product={p} className="w-[180px] shrink-0 lg:w-full" />)}
+            </div>
+          </section>
+        )}
       </div>
 
       {/* Trust badges */}
@@ -488,7 +519,8 @@ export default function ProductDetail() {
         <TrustItem icon={Truck} label="Livraison rapide" />
         <TrustItem icon={ShieldCheck} label="Produits garantis" />
       </div>
-    </div>
+    </FadeIn>
+    </PageTransition>
   );
 }
 

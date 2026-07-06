@@ -4,6 +4,7 @@ import { Search, ChevronRight, Package } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';
 import { useProducts } from '../../hooks/useProducts';
 import { Skeleton } from '../../components/Skeleton';
+import PageTransition from '../../components/PageTransition';
 import { getCategoryVisual, getCategoryDescription, DEFAULT_CATEGORIES } from '../../lib/categoryIcons';
 
 export default function Categories() {
@@ -28,7 +29,7 @@ export default function Categories() {
     .filter(({ count }) => count > 0);
 
   return (
-    <div className="flex flex-col gap-5 px-4 lg:px-0 py-4">
+    <PageTransition className="flex flex-col gap-5 px-4 lg:px-0 py-4">
       <div>
         <h1 className="text-xl font-bold text-txt-1">Catégories</h1>
         <p className="text-[13px] text-txt-2 mt-0.5">Trouvez tout ce dont vous avez besoin.</p>
@@ -83,6 +84,6 @@ export default function Categories() {
           })}
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }
