@@ -11,3 +11,9 @@ export function schoolAvatarColor(name) {
   for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
+
+export function schoolImage(school, packs = []) {
+  if (school.image || school.logo) return school.image || school.logo;
+  const packWithImage = packs.find(p => p.schoolId === school.id && p.mainImage);
+  return packWithImage?.mainImage || null;
+}

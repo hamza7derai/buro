@@ -213,6 +213,21 @@ export default function Checkout() {
         </div>
 
         <div className="flex flex-col gap-3 w-full">
+          <a
+            href={buildWhatsAppLink(
+`Bonjour younasser! 👋
+Je viens de passer la commande #${order.orderNumber}.
+Nom: ${name}
+Tél: ${phone}
+${deliveryMethod === 'home' ? '📍 Livraison à domicile' : '🏪 Retrait en magasin'}
+Merci de confirmer ma commande! 🙏`
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 bg-[#25D366] text-white text-[14px] font-semibold px-6 py-3.5 rounded-xl hover:opacity-90 transition-opacity"
+          >
+            <MessageCircle size={17} /> Recevoir la confirmation sur WhatsApp
+          </a>
           <Link
             to="/profil"
             className="flex items-center justify-center gap-2 bg-blue text-white text-[14px] font-semibold px-6 py-3.5 rounded-xl hover:opacity-90 transition-opacity"

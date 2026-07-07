@@ -11,7 +11,7 @@ import PageTransition from '../../components/PageTransition';
 import { formatPrice } from '../../lib/pricing';
 import { buildWhatsAppLink } from '../../lib/contact';
 import { MANUEL_NIVEAUX, MANUEL_CLASSES } from '../../lib/manuelLevels';
-import { schoolInitials, schoolAvatarColor } from '../../lib/schoolAvatar';
+import { schoolInitials, schoolAvatarColor, schoolImage } from '../../lib/schoolAvatar';
 import CachedImage from '../../components/CachedImage';
 
 const PAGE_SIZE = 8;
@@ -42,15 +42,16 @@ function CheckLine({ label }) {
   );
 }
 
-function SchoolCard({ school, levelsCount }) {
+function SchoolCard({ school, levelsCount, packs }) {
+  const image = schoolImage(school, packs);
   return (
     <Link to={`/packs/ecole/${school.id}`} className="bg-white rounded-xl shadow-sm p-3.5 flex items-center gap-3 hover:shadow-md transition-shadow">
       <div
         className="w-12 h-12 rounded-xl shrink-0 overflow-hidden flex items-center justify-center text-white font-bold text-[13px]"
         style={{ backgroundColor: schoolAvatarColor(school.name) }}
       >
-        {school.image || school.logo ? (
-          <CachedImage src={school.image || school.logo} alt={school.name} className="w-full h-full object-cover" />
+        {image ? (
+          <CachedImage src={image} alt={school.name} className="w-full h-full object-cover" />
         ) : (
           schoolInitials(school.name)
         )}
@@ -225,6 +226,7 @@ export default function Packs() {
                 key={school.id}
                 school={school}
                 levelsCount={activePacks.filter(p => p.schoolId === school.id).length}
+                packs={activePacks}
               />
             ))}
           </FadeIn>

@@ -6,7 +6,7 @@ import { SkeletonRow, FadeIn } from '../../components/SkeletonCard';
 import PageTransition from '../../components/PageTransition';
 import { formatPrice } from '../../lib/pricing';
 import { buildWhatsAppLink } from '../../lib/contact';
-import { schoolInitials, schoolAvatarColor } from '../../lib/schoolAvatar';
+import { schoolInitials, schoolAvatarColor, schoolImage } from '../../lib/schoolAvatar';
 import CachedImage from '../../components/CachedImage';
 
 function LevelCard({ pack }) {
@@ -73,8 +73,8 @@ export default function SchoolPacks() {
           className="w-14 h-14 rounded-2xl shrink-0 overflow-hidden flex items-center justify-center text-white font-bold text-[16px]"
           style={{ backgroundColor: schoolAvatarColor(school.name) }}
         >
-          {school.image || school.logo ? (
-            <CachedImage src={school.image || school.logo} alt={school.name} className="w-full h-full object-cover" />
+          {schoolImage(school, packs) ? (
+            <CachedImage src={schoolImage(school, packs)} alt={school.name} className="w-full h-full object-cover" />
           ) : (
             schoolInitials(school.name)
           )}
