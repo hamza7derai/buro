@@ -68,7 +68,7 @@ function Paginator({ page, totalPages, onChange, count, noun }) {
 }
 
 export default function Commandes() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();
   const { isAdmin } = useAuth();
@@ -96,6 +96,15 @@ export default function Commandes() {
     const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
     return onSnapshot(q, snap => setOrders(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
   }, []);
+
+  // Deep-link from the new-order banner: ?order=<id> opens that order's detail panel.
+  useEffect(() => {
+    const orderId = searchParams.get('order');
+    if (!orderId || orders.length === 0) return;
+    const target = orders.find(o => o.id === orderId);
+    if (target) setSelectedOrder(target);
+    setSearchParams(params => { params.delete('order'); return params; }, { replace: true });
+  }, [orders, searchParams, setSearchParams]);
 
   useEffect(() => {
     const q = query(collection(db, 'sales'), orderBy('createdAt', 'desc'));

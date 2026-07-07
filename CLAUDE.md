@@ -324,3 +324,4 @@ All `/admin/*` routes (except `/admin/login`) are wrapped in `PrivateRoute` and 
   - `products`: isVisible (asc) + isManuel (asc) + isFeatured (desc)
   - `products`: isVisible (asc) + categoryPath (asc)
   - `products`: isManuel (asc) + manuelInfo.level (asc)
+  - `orders`: status (asc) + createdAt (asc) — used by the admin new-order polling in `OrderNotificationsContext`

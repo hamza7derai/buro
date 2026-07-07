@@ -4,6 +4,7 @@ import { db } from '../firebase';
 import { collection, query, orderBy, limit, where, onSnapshot, getDocs, Timestamp } from 'firebase/firestore';
 import { useProducts } from '../hooks/useProducts';
 import { useAuth } from '../context/AuthContext';
+import { useOrderNotifications } from '../context/OrderNotificationsContext';
 import { Receipt, Wallet, Package, ShoppingBag, AlertTriangle, AlertCircle, CheckCircle2, Search, Bell, User } from 'lucide-react';
 import { statusMeta } from '../lib/orderStatus';
 import Thumb from '../components/Thumb';
@@ -16,9 +17,9 @@ function fmtDate(ts) {
     ' ' + new Date(ts.seconds * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-function StatCard({ icon: Icon, label, value, iconWrapCls, iconCls }) {
+function StatCard({ icon: Icon, label, value, iconWrapCls, iconCls, pulse }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-5 flex items-center gap-4">
+    <div className={`bg-white rounded-2xl border border-gray-200 p-5 flex items-center gap-4 ${pulse ? 'stat-card-pulse' : ''}`}>
       <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${iconWrapCls}`}>
         <Icon size={22} strokeWidth={1.75} className={iconCls} />
       </div>
@@ -57,6 +58,7 @@ function EmptyState({ text }) {
 export default function Dashboard() {
   const { products, loading: productsLoading } = useProducts();
   const { userData } = useAuth();
+  const { pulseKey } = useOrderNotifications();
   const [now] = useState(new Date());
 
   const [recentSales, setRecentSales] = useState([]);
@@ -175,7 +177,7 @@ export default function Dashboard() {
           <StatCard icon={Receipt} label="Ventes aujourd'hui" value={todaySales.length} iconWrapCls="bg-[#2563eb]/10" iconCls="text-[#2563eb]" />
           <StatCard icon={Wallet} label="CA aujourd'hui" value={formatPrice(caAujourdHui)} iconWrapCls="bg-[#F5A623]/15" iconCls="text-[#F5A623]" />
           <StatCard icon={Package} label="Articles vendus" value={loadingItems ? '…' : articlesVendus} iconWrapCls="bg-[#22c55e]/10" iconCls="text-[#22c55e]" />
-          <StatCard icon={ShoppingBag} label="Commandes en ligne" value={todayOrders.length} iconWrapCls="bg-[#1e2956]/10" iconCls="text-[#1e2956]" />
+          <StatCard key={pulseKey} icon={ShoppingBag} label="Commandes en ligne" value={todayOrders.length} iconWrapCls="bg-[#1e2956]/10" iconCls="text-[#1e2956]" pulse={pulseKey > 0} />
         </div>
 
         {/* ═══ Row 2: Dernières ventes / Commandes site web ═══ */}

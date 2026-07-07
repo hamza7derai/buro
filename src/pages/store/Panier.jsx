@@ -1,17 +1,43 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Minus, Plus, Trash2, ShoppingCart, Tag, X } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingCart, Tag, X, Package } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
-import { formatPrice } from '../../lib/pricing';
+import { useProducts } from '../../hooks/useProducts';
+import { getPrice, formatPrice } from '../../lib/pricing';
 import { DELIVERY_FEE } from '../../lib/checkoutPricing';
 import CachedImage from '../../components/CachedImage';
 import PageTransition from '../../components/PageTransition';
 
+function SuggestionCard({ product, onAdd }) {
+  const { price } = getPrice(product);
+  return (
+    <div className="w-[130px] shrink-0 bg-surface-1 border border-bord rounded-xl p-2.5 flex flex-col gap-1.5">
+      <div className="w-full aspect-square rounded-lg bg-surface-2 border border-bord overflow-hidden flex items-center justify-center">
+        {product.mainImage
+          ? <CachedImage src={product.mainImage} className="w-full h-full object-contain" />
+          : <Package size={22} className="text-txt-3" />}
+      </div>
+      <span className="text-[11px] font-medium text-txt-1 line-clamp-2 leading-snug" dir="auto">{product.name}</span>
+      <div className="flex items-center justify-between mt-auto pt-0.5">
+        <span className="font-mono font-bold text-navy text-[12px]">{formatPrice(price)}</span>
+        <button
+          type="button"
+          onClick={onAdd}
+          className="flex items-center gap-1 bg-blue text-white text-[10px] font-semibold px-2 py-1 rounded-lg hover:opacity-90 active:scale-95 transition-all"
+        >
+          <Plus size={11} /> Ajouter
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Panier() {
   const {
-    cartItems, removeFromCart, updateQuantity, cartTotal, cartCount,
+    cartItems, addToCart, removeFromCart, updateQuantity, cartTotal, cartCount,
     discountCode, discountAmount, applyDiscountCode, removeDiscountCode,
   } = useCart();
+  const { products: allProducts } = useProducts();
   const [codeInput, setCodeInput] = useState('');
   const [codeError, setCodeError] = useState('');
 
@@ -37,6 +63,26 @@ export default function Panier() {
   }
 
   const deliveryFee = DELIVERY_FEE;
+
+  const cartProductIds = new Set(cartItems.map(i => i.productId));
+  const cartProducts = cartItems
+    .map(i => allProducts.find(p => p.id === i.productId))
+    .filter(Boolean);
+
+  const fbwIds = [...new Set(cartProducts.flatMap(p => p.frequentlyBoughtWith || []))]
+    .filter(id => !cartProductIds.has(id));
+  const fbwSuggestions = fbwIds
+    .map(id => allProducts.find(p => p.id === id))
+    .filter(p => p && p.isVisible !== false);
+
+  let suggestions = fbwSuggestions;
+  if (suggestions.length === 0) {
+    const categoryIds = new Set(cartProducts.map(p => p.categoryPath?.[0]).filter(Boolean));
+    suggestions = allProducts
+      .filter(p => p.isVisible !== false && !cartProductIds.has(p.id) && categoryIds.has(p.categoryPath?.[0]))
+      .sort((a, b) => (Number(!!b.isFeatured) - Number(!!a.isFeatured)) || ((b.totalSold || 0) - (a.totalSold || 0)));
+  }
+  suggestions = suggestions.slice(0, 6);
 
   return (
     <PageTransition className="flex flex-col gap-5 px-4 lg:px-0 py-4">
@@ -73,6 +119,18 @@ export default function Panier() {
           </div>
         ))}
       </div>
+
+      {/* Complétez votre commande — bundle suggestions */}
+      {suggestions.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-[15px] font-bold text-txt-1">Complétez votre commande</h2>
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {suggestions.map(p => (
+              <SuggestionCard key={p.id} product={p} onAdd={() => addToCart(p, null, 1)} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Discount code */}
       <div className="bg-surface-1 border border-bord rounded-2xl p-4">

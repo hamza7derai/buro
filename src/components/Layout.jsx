@@ -1,9 +1,10 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, ShoppingCart, Package, Gift, ClipboardList, Truck, Users, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Gift, ClipboardList, Truck, Users, BarChart3, Bell, X } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { OrderNotificationsProvider, useOrderNotifications } from '../context/OrderNotificationsContext';
 
 function getInitials(name) {
   if (!name) return '?';
@@ -21,12 +22,40 @@ const NAV_ITEMS = [
   { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
 ];
 
-export default function Layout() {
+function NewOrderBanner() {
+  const navigate = useNavigate();
+  const { banner, dismissBanner } = useOrderNotifications();
+
+  if (!banner) return null;
+
+  return (
+    <div className="shrink-0 bg-[#2563eb] text-white px-5 py-3 flex items-center justify-between gap-4 animate-[banner-slide-in_0.25s_ease-out]">
+      <div className="flex items-center gap-2.5 min-w-0">
+        <Bell size={16} className="shrink-0" />
+        <span className="text-[13px] font-medium truncate">
+          🔔 Nouvelle commande! #{banner.orderNumber} — {banner.clientName}
+        </span>
+      </div>
+      <div className="flex items-center gap-3 shrink-0">
+        <button
+          onClick={() => { navigate(`/admin/commandes?tab=commandes&order=${banner.id}`); dismissBanner(); }}
+          className="bg-white/15 hover:bg-white/25 text-white text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-colors"
+        >
+          Voir
+        </button>
+        <button onClick={dismissBanner} className="text-white/70 hover:text-white"><X size={15} /></button>
+      </div>
+    </div>
+  );
+}
+
+function LayoutInner() {
   const { userData, logout } = useAuth();
   const [expanded, setExpanded] = useState(false);
   const [now, setNow] = useState(new Date());
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [suspendedCount, setSuspendedCount] = useState(0);
+  const { pendingCount } = useOrderNotifications();
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 1000);
@@ -53,7 +82,7 @@ export default function Layout() {
 
         <nav className="flex-1 flex flex-col gap-1 px-2.5 py-3">
           {NAV_ITEMS.map((item, i) => {
-            const badge = item.label === 'Commandes' ? suspendedCount : 0;
+            const badge = item.label === 'Commandes' ? suspendedCount + pendingCount : 0;
             const iconBlock = (
               <span className="relative inline-flex shrink-0">
                 <item.icon size={20} strokeWidth={1.75} />
@@ -123,9 +152,20 @@ export default function Layout() {
       </aside>
 
       {/* Page Content */}
-      <main className="flex-1 overflow-hidden">
-        <Outlet />
+      <main className="flex-1 overflow-hidden flex flex-col">
+        <NewOrderBanner />
+        <div className="flex-1 overflow-hidden">
+          <Outlet />
+        </div>
       </main>
     </div>
+  );
+}
+
+export default function Layout() {
+  return (
+    <OrderNotificationsProvider>
+      <LayoutInner />
+    </OrderNotificationsProvider>
   );
 }

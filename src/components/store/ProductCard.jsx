@@ -44,6 +44,11 @@ export default function ProductCard({ product, className = '', style }) {
     ? Math.round((1 - product.promo.promoPrice / product.basePriceSell) * 100)
     : 0;
 
+  const bulkOffers = product.bulkOffers || [];
+  const lowestBulkUnitPrice = bulkOffers.length > 0
+    ? Math.min(...bulkOffers.map(o => o.unitPrice))
+    : null;
+
   function handleFavorite(e) {
     e.preventDefault();
     const nowFav = toggleFavorite(product.id);
@@ -117,6 +122,11 @@ export default function ProductCard({ product, className = '', style }) {
             </div>
             {inStock && (
               <span className="hidden lg:block text-[10px] text-txt-3 mt-0.5">{getDeliveryCardLabel()}</span>
+            )}
+            {lowestBulkUnitPrice != null && (
+              <span className="hidden lg:flex items-center gap-1 text-[10px] text-blue-500 mt-0.5">
+                <Package size={10} /> Dès {formatPrice(lowestBulkUnitPrice)}/unité en lot
+              </span>
             )}
           </div>
           <button

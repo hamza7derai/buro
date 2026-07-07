@@ -35,6 +35,7 @@ export default function ProductDetail() {
   const [activeImage, setActiveImage] = useState(0);
   const [selectedLot, setSelectedLot] = useState(null);
   const scrollRef = useRef(null);
+  const bulkSectionRef = useRef(null);
 
   const variantTypes = product?.variantTypes || [];
   const selectedVariant = product?.hasVariants
@@ -267,13 +268,22 @@ export default function ProductDetail() {
             )}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <span className="font-mono font-bold text-navy text-2xl">{formatPrice(price)}</span>
             {oldPrice && (
               <>
                 <span className="font-mono text-txt-3 line-through text-[14px]">{formatPrice(oldPrice)}</span>
                 <span className="bg-danger/10 text-danger text-[11px] font-bold px-2 py-0.5 rounded-full">-{discountPct}%</span>
               </>
+            )}
+            {bulkOffers.length > 0 && (
+              <button
+                type="button"
+                onClick={() => bulkSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="bg-blue-light text-blue text-[11px] font-semibold px-2.5 py-1 rounded-full hover:opacity-80 transition-opacity"
+              >
+                💰 Disponible en lot
+              </button>
             )}
           </div>
 
@@ -355,7 +365,7 @@ export default function ProductDetail() {
       <div className="px-4 lg:px-0 flex flex-col gap-7 mt-2">
         {/* Acheter en lot et économiser */}
         {bulkOffers.length > 0 && (
-          <section>
+          <section ref={bulkSectionRef}>
             <h2 className="text-[14px] font-bold text-txt-1">Acheter en lot et économiser</h2>
             <p className="text-[12px] text-txt-2 mb-3">Idéal pour les écoles, associations et parents</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
