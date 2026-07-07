@@ -8,7 +8,6 @@ import { Skeleton } from '../../components/Skeleton';
 import { SkeletonRow, FadeIn } from '../../components/SkeletonCard';
 import { useMinLoadingTime } from '../../hooks/useMinLoadingTime';
 import PageTransition from '../../components/PageTransition';
-import FilterPanel, { FilterSection, FilterTriggerButton, FilterChip } from '../../components/store/FilterPanel';
 import { getPrice, formatPrice } from '../../lib/pricing';
 import { MANUEL_NIVEAUX, MANUEL_CLASSES, MANUEL_MATIERES } from '../../lib/manuelLevels';
 import { buildWhatsAppLink } from '../../lib/contact';
@@ -134,7 +133,6 @@ export default function Manuels() {
   const [sort, setSort] = useState(() => savedFilters?.sort || 'pertinence');
   const [viewMode, setViewMode] = useState('grid');
   const [page, setPage] = useState(1);
-  const [panelOpen, setPanelOpen] = useState(false);
 
   useEffect(() => {
     sessionStorage.setItem(MANUELS_FILTERS_KEY, JSON.stringify({ search, niveau, classe, matiere, sort }));
@@ -163,14 +161,9 @@ export default function Manuels() {
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const paged = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const panelFilterCount = (classe ? 1 : 0) + (matiere ? 1 : 0);
   function resetFilters() {
     setSearch(''); setNiveau(''); setClasse(''); setMatiere(''); setSort('pertinence');
   }
-
-  const filterChips = [];
-  if (classe) filterChips.push({ id: 'classe', label: classe, onRemove: () => setClasse('') });
-  if (matiere) filterChips.push({ id: 'matiere', label: matiere, onRemove: () => setMatiere('') });
 
   function handleAdd(product) {
     addToCart(product, null, 1);
@@ -209,71 +202,49 @@ export default function Manuels() {
         </a>
       </div>
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+      <div className="flex items-center gap-2">
         <select
           value={niveau}
           onChange={e => { setNiveau(e.target.value); setClasse(''); }}
-          className="bg-surface-1 border border-bord rounded-xl px-3 py-2 text-[12px] text-txt-1 shrink-0 outline-none"
+          className="flex-1 min-w-0 bg-surface-1 border border-bord rounded-xl px-2 py-2 text-sm text-txt-1 outline-none"
         >
           <option value="">Niveau</option>
           {MANUEL_NIVEAUX.map(n => <option key={n} value={n}>{n}</option>)}
         </select>
-        <FilterTriggerButton count={panelFilterCount} onClick={() => setPanelOpen(true)} />
+        {niveau === 'Supérieur' ? (
+          <input
+            value={classe}
+            onChange={e => setClasse(e.target.value)}
+            placeholder="Classe"
+            className="flex-1 min-w-0 bg-surface-1 border border-bord rounded-xl px-2 py-2 text-sm text-txt-1 outline-none placeholder:text-txt-3"
+          />
+        ) : (
+          <select
+            value={classe}
+            onChange={e => setClasse(e.target.value)}
+            disabled={!niveau}
+            className="flex-1 min-w-0 bg-surface-1 border border-bord rounded-xl px-2 py-2 text-sm text-txt-1 outline-none disabled:opacity-50"
+          >
+            <option value="">Classe</option>
+            {(MANUEL_CLASSES[niveau] || []).map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        )}
+        <select
+          value={matiere}
+          onChange={e => setMatiere(e.target.value)}
+          className="flex-1 min-w-0 bg-surface-1 border border-bord rounded-xl px-2 py-2 text-sm text-txt-1 outline-none"
+        >
+          <option value="">Matière</option>
+          {MANUEL_MATIERES.map(m => <option key={m} value={m}>{m}</option>)}
+        </select>
+        <button
+          type="button"
+          onClick={resetFilters}
+          className="text-[13px] font-medium text-blue shrink-0 whitespace-nowrap"
+        >
+          Réinitialiser
+        </button>
       </div>
-
-      {filterChips.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          {filterChips.map(chip => (
-            <FilterChip key={chip.id} label={chip.label} onRemove={chip.onRemove} />
-          ))}
-        </div>
-      )}
-
-      <FilterPanel
-        open={panelOpen}
-        onClose={() => setPanelOpen(false)}
-        onReset={resetFilters}
-        resultCount={sorted.length}
-        resultLabel={`résultat${sorted.length !== 1 ? 's' : ''}`}
-      >
-        <FilterSection title="Classe">
-          {niveau === 'Supérieur' ? (
-            <input
-              value={classe}
-              onChange={e => setClasse(e.target.value)}
-              placeholder="Classe (ex: Licence 2)"
-              className="bg-surface-2 border border-bord rounded-xl px-3 py-2 text-[12px] text-txt-1 outline-none"
-            />
-          ) : !niveau ? (
-            <p className="text-[12px] text-txt-3">Sélectionnez d'abord un niveau.</p>
-          ) : (
-            <>
-              <label className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
-                <input type="radio" name="classe" checked={classe === ''} onChange={() => setClasse('')} className="accent-blue" />
-                Toutes les classes
-              </label>
-              {(MANUEL_CLASSES[niveau] || []).map(c => (
-                <label key={c} className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
-                  <input type="radio" name="classe" checked={classe === c} onChange={() => setClasse(c)} className="accent-blue" />
-                  {c}
-                </label>
-              ))}
-            </>
-          )}
-        </FilterSection>
-        <FilterSection title="Matière">
-          <label className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
-            <input type="radio" name="matiere" checked={matiere === ''} onChange={() => setMatiere('')} className="accent-blue" />
-            Toutes les matières
-          </label>
-          {MANUEL_MATIERES.map(m => (
-            <label key={m} className="flex items-center gap-2 text-[12px] text-txt-1 cursor-pointer">
-              <input type="radio" name="matiere" checked={matiere === m} onChange={() => setMatiere(m)} className="accent-blue" />
-              {m}
-            </label>
-          ))}
-        </FilterSection>
-      </FilterPanel>
 
       <div className="flex items-center justify-between">
         <span className="text-[13px] font-semibold text-txt-1">Résultats ({sorted.length})</span>

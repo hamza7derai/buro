@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 
 // Filter trigger button — outlined, shows a small blue badge with the active filter count.
@@ -54,8 +55,15 @@ export function FilterSection({ title, children, defaultOpen = true }) {
   );
 }
 
+// Bottom sheets close on a downward swipe past this distance (px).
+const SWIPE_CLOSE_THRESHOLD = 100;
+
 // Right-side panel on desktop (1024px+), bottom sheet on mobile — both with an overlay.
 export default function FilterPanel({ open, onClose, onReset, resultCount, resultLabel = 'produits', children }) {
+  const [dragY, setDragY] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const dragStartYRef = useRef(0);
+
   useEffect(() => {
     if (!open) return;
     const prevOverflow = document.body.style.overflow;
@@ -65,15 +73,41 @@ export default function FilterPanel({ open, onClose, onReset, resultCount, resul
 
   if (!open) return null;
 
-  return (
+  function handleDragStart(e) {
+    dragStartYRef.current = e.touches[0].clientY;
+    setDragging(true);
+  }
+  function handleDragMove(e) {
+    const delta = e.touches[0].clientY - dragStartYRef.current;
+    if (delta > 0) setDragY(delta);
+  }
+  function handleDragEnd() {
+    setDragging(false);
+    if (dragY > SWIPE_CLOSE_THRESHOLD) onClose();
+    setDragY(0);
+  }
+
+  // Portaled to document.body — the storefront wraps every page in PageTransition,
+  // which applies a Tailwind translate-y transform. That transform makes the
+  // ancestor the containing block for `position: fixed` descendants (per the CSS
+  // spec), so a fixed-position sheet nested inside it sizes itself against the
+  // page's content height instead of the real viewport. Rendering outside that
+  // tree keeps the sheet anchored to the actual viewport.
+  return createPortal(
     <div className="fixed inset-0 bg-black/40 z-50 flex items-end lg:items-stretch justify-center lg:justify-end" onClick={onClose}>
       <div
         className="filter-panel-anim bg-white w-full lg:w-[300px] h-[80vh] lg:h-full rounded-t-2xl lg:rounded-none flex flex-col shadow-2xl"
+        style={{ transform: dragY ? `translateY(${dragY}px)` : undefined, transition: dragging ? 'none' : 'transform 0.2s ease-out' }}
         onClick={e => e.stopPropagation()}
       >
-        <button type="button" onClick={onClose} className="lg:hidden flex justify-center pt-2.5 pb-1 shrink-0">
+        <div
+          className="lg:hidden flex justify-center pt-2.5 pb-1 shrink-0 touch-none"
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
+        >
           <span className="w-10 h-1 rounded-full bg-bord" />
-        </button>
+        </div>
         <div className="flex items-center justify-between px-5 py-4 border-b border-bord shrink-0">
           <h2 className="text-[15px] font-bold text-txt-1">Filtres</h2>
           <button
@@ -100,6 +134,7 @@ export default function FilterPanel({ open, onClose, onReset, resultCount, resul
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

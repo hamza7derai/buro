@@ -18,7 +18,7 @@ const NAV_LINKS = [
   { to: '/', icon: Home, label: 'Accueil', desktopLabel: 'Accueil', end: true },
   { to: '/categories', icon: Grid3x3, label: 'Catégories', desktopLabel: 'Catégories' },
   { to: '/manuels', icon: BookOpen, label: 'Manuels', desktopLabel: 'Manuels scolaires' },
-  { to: '/packs', icon: Gift, label: 'Pack', desktopLabel: 'Pack & Offres' },
+  { to: '/packs', icon: Gift, label: 'Pack', desktopLabel: 'Écoles & Packs' },
   { to: '/profil', icon: User, label: 'Profil', desktopLabel: 'Profil' },
 ];
 

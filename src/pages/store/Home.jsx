@@ -106,6 +106,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Social proof stats */}
+      <p className="text-center text-[11px] text-txt-3">
+        📦 12 commandes cette semaine · 👥 150+ clients satisfaits · ⭐ 5/5 Google
+      </p>
+
       {/* Mobile delivery banner */}
       <section className="lg:hidden bg-gradient-to-r from-blue to-navy rounded-2xl p-4 text-white flex items-center gap-3">
         <span className="text-3xl">🛵</span>
@@ -113,6 +118,20 @@ export default function Home() {
           <div className="text-[13px] font-semibold">Livraison rapide à Marrakech</div>
           <div className="text-[11px] text-white/80">Recevez vos articles en moins de 24h</div>
         </div>
+      </section>
+
+      {/* School finder promo */}
+      <section className="bg-white border border-bord rounded-2xl p-4 flex items-center justify-between gap-4">
+        <div>
+          <div className="text-[13px] font-bold text-txt-1">Votre enfant change d'école?</div>
+          <div className="text-[12px] text-txt-2 mt-0.5">Trouvez sa liste complète en 2 clics.</div>
+        </div>
+        <Link
+          to="/packs"
+          className="shrink-0 bg-blue text-white text-[12px] font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity whitespace-nowrap"
+        >
+          Trouver mon école →
+        </Link>
       </section>
 
       {/* Category cards */}

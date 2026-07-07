@@ -28,6 +28,7 @@ const StoreProductDetail = lazy(() => import('./pages/store/ProductDetail'));
 const StoreManuels = lazy(() => import('./pages/store/Manuels'));
 const StoreRecentlyViewed = lazy(() => import('./pages/store/RecentlyViewed'));
 const StorePacks = lazy(() => import('./pages/store/Packs'));
+const StoreSchoolPacks = lazy(() => import('./pages/store/SchoolPacks'));
 const StorePackDetail = lazy(() => import('./pages/store/PackDetail'));
 const StorePanier = lazy(() => import('./pages/store/Panier'));
 const StoreCheckout = lazy(() => import('./pages/store/Checkout'));
@@ -108,6 +109,7 @@ export default function App() {
             <Route path="manuels" element={<StoreManuels />} />
             <Route path="recemment-consultes" element={<StoreRecentlyViewed />} />
             <Route path="packs" element={<StorePacks />} />
+            <Route path="packs/ecole/:schoolId" element={<StoreSchoolPacks />} />
             <Route path="packs/:slug" element={<StorePackDetail />} />
             <Route path="panier" element={<StorePanier />} />
             <Route path="checkout" element={<StoreCheckout />} />

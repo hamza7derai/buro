@@ -8,6 +8,7 @@ import { useCategories } from '../../hooks/useCategories';
 import { useToast } from '../Toast';
 import { getPrice, formatPrice, isPromoActive } from '../../lib/pricing';
 import { getStockState, STOCK_LABELS, STOCK_DOT_CLASS } from '../../lib/stock';
+import { getDeliveryCardLabel } from '../../lib/delivery';
 
 export default function ProductCard({ product, className = '', style }) {
   const { addToCart } = useCart();
@@ -114,6 +115,9 @@ export default function ProductCard({ product, className = '', style }) {
               <span className={`w-1.5 h-1.5 rounded-full ${STOCK_DOT_CLASS[stockState]}`} />
               <span className="text-[10px] text-txt-2">{STOCK_LABELS[stockState]}</span>
             </div>
+            {inStock && (
+              <span className="hidden lg:block text-[10px] text-txt-3 mt-0.5">{getDeliveryCardLabel()}</span>
+            )}
           </div>
           <button
             type="button"

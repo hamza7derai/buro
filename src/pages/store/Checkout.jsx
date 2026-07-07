@@ -11,6 +11,7 @@ import { db } from '../../firebase';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { formatPrice } from '../../lib/pricing';
 import { buildWhatsAppLink } from '../../lib/contact';
+import { getDeliveryEstimateWord } from '../../lib/delivery';
 import CachedImage from '../../components/CachedImage';
 import PageTransition from '../../components/PageTransition';
 
@@ -640,6 +641,7 @@ function OrderSummary({ cartItems, subtotal, deliveryFee, discountAmount, total 
       <div className="flex flex-col gap-2">
         <PriceLine label="Sous-total" value={formatPrice(subtotal)} />
         <PriceLine label="Frais de livraison" value={deliveryFee === 0 ? 'Gratuit' : formatPrice(deliveryFee)} />
+        <PriceLine label="Livraison estimée" value={getDeliveryEstimateWord()} />
         {discountAmount > 0 && <PriceLine label="Remise" value={`-${formatPrice(discountAmount)}`} danger />}
       </div>
       <div className="h-px bg-bord" />

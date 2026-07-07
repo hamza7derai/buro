@@ -10,6 +10,7 @@ import { useRecentlyViewed } from '../../hooks/useRecentlyViewed';
 import { useMinLoadingTime } from '../../hooks/useMinLoadingTime';
 import { getPrice, formatPrice } from '../../lib/pricing';
 import { getStockState, STOCK_LABELS, STOCK_DOT_CLASS, STOCK_TEXT_CLASS } from '../../lib/stock';
+import { getDeliveryDetailMessage } from '../../lib/delivery';
 import { resolveCategoryLabel } from '../../lib/categoryIcons';
 import { genreLabel } from '../../lib/bookMeta';
 import ProductCard from '../../components/store/ProductCard';
@@ -261,6 +262,9 @@ export default function ProductDetail() {
             <span className={`text-[12px] font-medium ${STOCK_TEXT_CLASS[stockState]}`}>
               {STOCK_LABELS[stockState]}
             </span>
+            {product.totalSold > 0 && (
+              <span className="text-[11px] text-txt-3">· ✓ Acheté {product.totalSold} fois</span>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
@@ -272,6 +276,10 @@ export default function ProductDetail() {
               </>
             )}
           </div>
+
+          {inStock && (
+            <p className="text-[13px] font-semibold text-success -mt-2">{getDeliveryDetailMessage()}</p>
+          )}
 
           {/* Variant selectors */}
           {variantTypes.map(type => {
