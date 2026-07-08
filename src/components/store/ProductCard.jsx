@@ -8,7 +8,6 @@ import { useCategories } from '../../hooks/useCategories';
 import { useToast } from '../Toast';
 import { getPrice, formatPrice, isPromoActive } from '../../lib/pricing';
 import { getStockState, STOCK_LABELS, STOCK_DOT_CLASS } from '../../lib/stock';
-import { getDeliveryCardLabel } from '../../lib/delivery';
 
 export default function ProductCard({ product, className = '', style }) {
   const { addToCart } = useCart();
@@ -44,10 +43,12 @@ export default function ProductCard({ product, className = '', style }) {
     ? Math.round((1 - product.promo.promoPrice / product.basePriceSell) * 100)
     : 0;
 
-  const bulkOffers = product.bulkOffers || [];
-  const lowestBulkUnitPrice = bulkOffers.length > 0
-    ? Math.min(...bulkOffers.map(o => o.unitPrice))
-    : null;
+  const colorType = product.variantTypes?.find(t => /coul/i.test(t));
+  const colorHexes = colorType
+    ? (product.variantOptions?.[colorType] || [])
+        .map(opt => product.variantOptionColors?.[opt])
+        .filter(Boolean)
+    : [];
 
   function handleFavorite(e) {
     e.preventDefault();
@@ -109,6 +110,21 @@ export default function ProductCard({ product, className = '', style }) {
         )}
         <div className="flex items-center justify-between mt-auto pt-1.5">
           <div className="flex flex-col">
+            {colorHexes.length > 0 && (
+              <div className="flex items-center gap-1 mb-1">
+                {colorHexes.slice(0, colorHexes.length > 4 ? 3 : 4).map((hex, i) => (
+                  <span key={i} className="w-3 h-3 rounded-full border border-black/5 shrink-0" style={{ backgroundColor: hex }} />
+                ))}
+                {colorHexes.length > 4 && (
+                  <span
+                    className="w-3 h-3 rounded-full flex items-center justify-center text-[8px] font-semibold text-gray-500 shrink-0"
+                    style={{ backgroundColor: '#f1f5f9' }}
+                  >
+                    +{colorHexes.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
             {showStartingFrom && <span className="text-[10px] text-txt-2 leading-none mb-0.5">À partir de</span>}
             {oldPrice && !showStartingFrom && (
               <span className="font-mono text-[11px] text-txt-3 line-through leading-none mb-0.5">{formatPrice(oldPrice)}</span>
@@ -120,14 +136,6 @@ export default function ProductCard({ product, className = '', style }) {
               <span className={`w-1.5 h-1.5 rounded-full ${STOCK_DOT_CLASS[stockState]}`} />
               <span className="text-[10px] text-txt-2">{STOCK_LABELS[stockState]}</span>
             </div>
-            {inStock && (
-              <span className="hidden lg:block text-[10px] text-txt-3 mt-0.5">{getDeliveryCardLabel()}</span>
-            )}
-            {lowestBulkUnitPrice != null && (
-              <span className="hidden lg:flex items-center gap-1 text-[10px] text-blue-500 mt-0.5">
-                <Package size={10} /> Dès {formatPrice(lowestBulkUnitPrice)}/unité en lot
-              </span>
-            )}
           </div>
           <button
             type="button"
